@@ -290,11 +290,17 @@ body.readonly .officer-cell{cursor:default!important}
     <div class="em-head">✏️ 編輯座位</div>
     <input type="text" id="em-name" placeholder="輸入姓名…"
       onkeydown="if(event.key==='Enter')saveEditModal()"
+      oninput="updateSyncHint()"
       style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit;margin-bottom:14px;transition:border-color .15s"
       onfocus="this.style.borderColor='#2E4899';this.style.boxShadow='0 0 0 3px rgba(46,72,153,.1)'"
       onblur="this.style.borderColor='#ddd';this.style.boxShadow='none'">
     <div style="font-size:12px;color:#888;font-weight:600;letter-spacing:.3px;margin-bottom:2px">顏色 / 身分</div>
     <div class="em-swatches" id="em-swatches"></div>
+    <label id="em-sync-wrap" style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 12px;background:#f5f8ff;border:1px solid #c8d4ec;border-radius:7px;cursor:pointer;font-size:13px;color:#1a3a6b">
+      <input type="checkbox" id="em-sync" onchange="updateSyncHint()" style="width:16px;height:16px;cursor:pointer;accent-color:#2E4899">
+      <span>🔄 同步更新成員管理（修改名冊中的名字）</span>
+    </label>
+    <div id="em-sync-hint" style="font-size:11px;color:#888;margin-top:6px;line-height:1.5;display:none"></div>
     <div class="em-actions">
       <button class="btn btn-red btn-sm" onclick="clearEditCell()">🗑 清空</button>
       <div style="display:flex;gap:7px">
@@ -1089,7 +1095,7 @@ function textColor(hex){
   return(r*299+g*587+b*114)/1000>128?'#222':'#fff';
 }
 
-let _editTarget=null,_selectedSwatch=5;
+let _editTarget=null,_selectedSwatch=5,_editOriginalName='';
 
 function buildSwatches(){
   const el=document.getElementById('em-swatches');
@@ -1112,13 +1118,64 @@ function selectSwatch(idx){
   buildSwatches();
 }
 
+// 即時更新同步提示
+function updateSyncHint(){
+  const hint=document.getElementById('em-sync-hint');
+  const syncBox=document.getElementById('em-sync');
+  if(!hint||!syncBox) return;
+  if(!syncBox.checked){hint.style.display='none';return;}
+  const newName=(document.getElementById('em-name').value||'').trim();
+  if(!newName){
+    hint.textContent='⚠️ 姓名為空，無法同步';
+    hint.style.color='#c62828';
+    hint.style.display='block';
+    return;
+  }
+  const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
+  if(origMember&&newName!==_editOriginalName){
+    const dup=D.members.find(m=>m.name===newName&&m.id!==origMember.id);
+    if(dup){
+      hint.textContent=`⚠️ 名冊中已有另一位「${newName}」，無法改名造成重複`;
+      hint.style.color='#c62828';
+    }else{
+      hint.textContent=`✏️ 將把名冊中「${_editOriginalName}」改名為「${newName}」`;
+      hint.style.color='#1a3a6b';
+    }
+  }else if(!origMember&&newName){
+    const exists=D.members.find(m=>m.name===newName);
+    if(exists){
+      hint.textContent=`ℹ️ 名冊中已存在「${newName}」，不會重複新增`;
+      hint.style.color='#888';
+    }else{
+      hint.textContent=`➕ 將在名冊中新增「${newName}」為一般會員`;
+      hint.style.color='#137333';
+    }
+  }else{
+    hint.textContent='（名字未變更，不影響名冊）';
+    hint.style.color='#888';
+  }
+  hint.style.display='block';
+}
+
 function editCell(row,col){
   if(IS_READONLY) return;
   if(_dragged) return;
   if(!D.seating||!D.seating[row]) return;
   _editTarget={row,col};
   const cell=D.seating[row][col]||{n:'',r:'empty'};
-  document.getElementById('em-name').value=(cell.r==='empty')?'':(cell.n||'');
+  const origName=(cell.r==='empty')?'':(cell.n||'');
+  _editOriginalName=origName;
+  document.getElementById('em-name').value=origName;
+  // 代理人格子不顯示同步選項
+  const syncWrap=document.getElementById('em-sync-wrap');
+  const syncBox=document.getElementById('em-sync');
+  if(cell.r==='deputy'){
+    syncWrap.style.display='none';
+  }else{
+    syncWrap.style.display='flex';
+  }
+  syncBox.checked=false;
+  updateSyncHint();
   buildSwatches();
   let idx=5;
   if(cell.color){
@@ -1150,6 +1207,48 @@ function saveEditModal(){
     const defColor=(RCOLOR[preset.role]||'#f4f4f4').toLowerCase();
     if(preset.color.toLowerCase()!==defColor) cell.color=preset.color;
   }
+
+  // ── 同步名冊邏輯 ──
+  const syncBox=document.getElementById('em-sync');
+  const wantSync=syncBox&&syncBox.checked&&preset.role!=='deputy';
+  if(wantSync&&name){
+    const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
+    if(origMember&&name!==_editOriginalName){
+      // 改名字：檢查重複
+      const dup=D.members.find(m=>m.name===name&&m.id!==origMember.id);
+      if(dup){
+        alert(`⚠️ 無法同步：名冊中已有另一位「${name}」，不能造成名字重複。\n\n請直接改座位名字（不勾同步），或先到成員管理處理。`);
+        return;
+      }
+      if(!confirm(`確認要將名冊中「${_editOriginalName}」改名為「${name}」嗎？\n\n這會同步更新成員管理的資料,所有座位圖上出現這個名字的地方也會一起變更。`)){
+        return;
+      }
+      // 執行改名：1) 改成員名冊 2) 把座位圖中所有同名格子一起改
+      origMember.name=name;
+      if(D.seating&&Array.isArray(D.seating)){
+        D.seating.forEach(r=>r.forEach(c=>{
+          if(c&&c.n===_editOriginalName) c.n=name;
+        }));
+      }
+    }else if(!origMember&&name){
+      // 空格或新名字 → 檢查是否已在名冊
+      const exists=D.members.find(m=>m.name===name);
+      if(!exists){
+        if(!confirm(`「${name}」不在成員名冊中。\n\n要新增為「一般會員」嗎?\n\n（按取消則只改座位，不動名冊）`)){
+          // 不新增，繼續正常存座位
+        }else{
+          D.members.push({
+            id:'m'+Date.now(),
+            name,
+            role:'regular',
+            chain:null,
+            pair:null
+          });
+        }
+      }
+    }
+  }
+
   if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
   D.seating[row][col]=cell;
   save();closeEditModal();renderChart();
