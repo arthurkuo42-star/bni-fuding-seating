@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BNI 高雄富鼎分會 · 座位管理系統</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Microsoft JhengHei','微軟正黑體',sans-serif;background:#181825;min-height:100vh;color:#222}
+header{background:linear-gradient(135deg,#0a0a18,#181830 50%,#1e1408);border-bottom:2px solid #c8a84b;display:flex;align-items:center;padding:0 20px;box-shadow:0 2px 20px rgba(0,0,0,.6);position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px;padding:12px 0;flex:1}
+.brand-icon{font-size:22px}
+.brand-title{color:#c8a84b;font-size:18px;font-weight:700;letter-spacing:1px}
+.brand-sub{color:rgba(200,168,75,.5);font-size:11px;margin-left:2px;align-self:flex-end;padding-bottom:1px}
+.readonly-badge{background:#c8a84b;color:#1a1208;font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;margin-left:10px;letter-spacing:.5px}
+.tabs{display:flex}
+.tab{background:none;border:none;color:rgba(255,255,255,.5);padding:14px 16px;cursor:pointer;font-size:13px;font-family:inherit;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
+.tab:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
+.tab.on{color:#c8a84b;border-bottom-color:#c8a84b;background:rgba(200,168,75,.06)}
+main{padding:16px;max-width:1080px;margin:0 auto}
+.panel{display:none}.panel.on{display:block}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.btn{padding:8px 15px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;transition:all .15s;display:inline-flex;align-items:center;gap:5px;font-weight:500}
+.btn-gold{background:linear-gradient(135deg,#c8a84b,#ddb84e);color:#1a1208}
+.btn-gold:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 14px rgba(200,168,75,.4)}
+.btn-green{background:#2e7d32;color:#fff}.btn-green:hover{background:#1b5e20}
+.btn-slate{background:#546e7a;color:#fff}.btn-slate:hover{background:#37474f}
+.btn-blue{background:#1565c0;color:#fff}.btn-blue:hover{background:#0d47a1}
+.btn-red{background:#c62828;color:#fff}.btn-red:hover{background:#b71c1c}
+.btn-sm{padding:5px 10px;font-size:12px}
+label.btn{cursor:pointer}
+.btn-cloud{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff}
+.btn-cloud:hover{filter:brightness(1.15);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,115,232,.4)}
+.btn-cloud-save{background:linear-gradient(135deg,#0b8043,#1b5e20);color:#fff}
+.btn-cloud-save:hover{filter:brightness(1.12);transform:translateY(-1px);box-shadow:0 4px 14px rgba(11,128,67,.4)}
+/* Cloud settings modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:28px;width:480px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px;color:#1a1a2e}
+.modal label{display:block;font-size:13px;color:#555;margin-bottom:5px;margin-top:12px}
+.modal input{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit}
+.modal input:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px rgba(26,115,232,.15)}
+.modal-hint{font-size:12px;color:#888;margin-top:6px;line-height:1.5}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.cloud-status{font-size:12px;padding:4px 10px;border-radius:12px;display:inline-flex;align-items:center;gap:5px;margin-left:4px}
+.cs-ok{background:#e6f4ea;color:#137333}
+.cs-err{background:#fce8e6;color:#c5221f}
+.cs-loading{background:#e8f0fe;color:#1a73e8}
+.card{background:#fff;border-radius:10px;padding:18px;box-shadow:0 2px 14px rgba(0,0,0,.12);margin-bottom:14px}
+.card-head{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:10px;border-bottom:2px solid #f0f0f0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px;background:#fff;border-radius:8px;box-shadow:0 1px 6px rgba(0,0,0,.08);margin-bottom:12px}
+.leg{display:flex;align-items:center;gap:5px;font-size:12px;color:#444}
+.leg-dot{width:15px;height:15px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+.chart-wrap{background:#fff;border-radius:10px;padding:16px;box-shadow:0 2px 14px rgba(0,0,0,.12);overflow-x:auto}
+#pa{min-width:700px}
+.top-row{display:grid;grid-template-columns:1fr auto 6px auto;gap:6px;margin-bottom:5px;align-items:stretch}
+.stage-box{border:2px solid #333;text-align:center;font-size:22px;font-weight:700;letter-spacing:8px;color:#333;display:flex;align-items:center;justify-content:center;padding:8px}
+.chair-box{background:#2E4899;color:#fff;border-radius:6px;text-align:center;padding:8px 10px;min-width:90px}
+.comp-box{background:#8B6914;color:#fff;border-radius:6px;text-align:center;padding:8px 10px;min-width:105px}
+.box-lbl{font-size:10px;opacity:.75;margin-bottom:3px}
+.box-name{font-weight:700;font-size:13px;line-height:1.4}
+.sg{width:100%;border-collapse:collapse;margin-top:3px}
+.sg td{border:1px solid #ddd;text-align:center;font-size:13px;height:33px;min-width:95px;padding:0 3px;vertical-align:middle}
+.rn{width:22px!important;min-width:22px!important;background:#f5f5f5;color:#999;font-size:10px;border:none!important;border-right:1px solid #e0e0e0!important}
+.officer-row{display:flex;gap:0;margin:5px 0 4px;align-items:stretch}
+.officer-group{display:flex;gap:4px;flex:none}
+.officer-mid-gap{flex:1}
+.officer-cell{width:95px;min-width:95px;height:48px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;cursor:grab;user-select:none;transition:filter .1s}
+.officer-cell:hover{filter:brightness(.9)}
+.off-title{font-size:9px;color:rgba(255,255,255,.7);line-height:1;margin-bottom:3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.off-name{font-size:13px;font-weight:700;line-height:1.2;text-align:center}
+.off-empty .off-title{color:rgba(255,255,255,.4)}
+.off-empty .off-name{color:rgba(255,255,255,.3);font-weight:400;font-style:italic;font-size:11px}
+.sep-tbl{width:6px!important;min-width:6px!important;max-width:6px!important;padding:0!important;border:none!important;background:linear-gradient(90deg,#e8d0a8,#c8962a,#e8d0a8);position:relative}
+.sep-aisle{width:18px!important;min-width:18px!important;max-width:18px!important;padding:0!important;border:none!important;background:repeating-linear-gradient(90deg,#e8e8e8 0px,#e8e8e8 2px,#fff 2px,#fff 6px)}
+.seat{cursor:grab;user-select:none;transition:filter .1s}
+/* Edit Modal */
+.em-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:998;align-items:center;justify-content:center}
+.em-bg.open{display:flex}
+.em-box{background:#fff;border-radius:12px;padding:22px 24px;width:320px;max-width:93vw;box-shadow:0 8px 40px rgba(0,0,0,.28)}
+.em-head{font-size:15px;font-weight:700;margin-bottom:14px;color:#1a1a2e}
+.em-box label{display:block;font-size:12px;color:#666;margin-bottom:7px;margin-top:13px;font-weight:600;letter-spacing:.3px}
+.em-box label:first-of-type{margin-top:0}
+.em-box input[type=text]{width:100%;padding:9px 11px;border:1.5px solid #ddd;border-radius:7px;font-size:14px;font-family:inherit;transition:border-color .15s}
+.em-box input[type=text]:focus{outline:none;border-color:#2E4899;box-shadow:0 0 0 3px rgba(46,72,153,.1)}
+.em-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 8px;margin-top:8px}
+.em-sw{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.em-sw-dot{width:40px;height:40px;border-radius:8px;border:3px solid transparent;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:16px;color:transparent}
+.em-sw:hover .em-sw-dot{transform:scale(1.1)}
+.em-sw.sel .em-sw-dot{border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(26,26,46,.22);color:inherit}
+.em-sw-lbl{font-size:11px;color:#555;white-space:nowrap;font-weight:500}
+.em-sep{grid-column:1/-1;height:0;border-top:1.5px dashed #e0e0e0;margin:4px 0}
+.em-sep-lbl{grid-column:1/-1;font-size:11px;color:#aaa;margin-bottom:-2px}
+.em-actions{display:flex;justify-content:space-between;margin-top:16px;align-items:center}
+.seat:hover{filter:brightness(.9)}
+.seat.dragging{opacity:.3}
+.seat.drag-over{outline:3px dashed #c8a84b!important;outline-offset:-2px}
+.seat-e{background:#f9f9f9!important;cursor:pointer;color:transparent!important}
+.seat-e.drag-over{background:#e8f4e8!important;outline:2px dashed #5fa83e!important;outline-offset:-2px;cursor:copy}
+.seat-e:hover:not(.drag-over){background:#f0f5ff!important;outline:1.5px dashed #2E4899;outline-offset:-1px}
+.rc-binding{background:#4e87c8;color:#fff}
+.rc-guest{background:#f9e04b;color:#333;font-weight:600}
+.rc-mentee{background:#5fa83e;color:#fff}
+.rc-mentor{background:#e87ca0;color:#2a0010}
+.rc-reception{background:#7b52ab;color:#fff;font-weight:600}
+.rc-regular{background:#f4f4f4;color:#333}
+.rc-deputy{background:#8B0000;color:#fff;font-style:italic}
+.rc-front{background:#2E4899;color:#fff}
+.score-badge{display:inline-block;font-size:9px;background:rgba(0,0,0,.2);border-radius:3px;padding:0 3px;margin-left:3px;vertical-align:middle;line-height:1.4}
+.pair-list{display:flex;flex-direction:column;gap:8px}
+.pair-row{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
+.pair-row input,.pair-row select{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;min-width:0}
+.pair-row input{flex:1}.pair-row select{flex:1}
+.score-sel{flex:0 0 100px!important}
+.rm-btn{background:none;border:1px solid #e0e0e0;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:15px;color:#bbb;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.rm-btn:hover{background:#ffebee;border-color:#ef9a9a;color:#c62828}
+.mtbl{width:100%;border-collapse:collapse;font-size:13px}
+.mtbl th{background:#2E4899;color:#fff;padding:8px 10px;text-align:left;font-weight:600}
+.mtbl td{padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.mtbl tr:hover td{background:#f5f8ff}
+.mtbl select,.mtbl input[type=text]{padding:4px 7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;width:100%}
+.off-tbl{width:100%;border-collapse:collapse;font-size:13px}
+.off-tbl th{background:#1a3a6b;color:#fff;padding:9px 12px;text-align:left}
+.off-tbl td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}
+.off-tbl select{padding:5px 8px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%}
+.pos-badge{display:inline-block;background:#2E4899;color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:700;margin-right:6px}
+.chain-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ctag{background:#eef2ff;border:1px solid #3f51b5;color:#283593;padding:5px 12px;border-radius:20px;font-size:13px;display:flex;align-items:center;gap:8px}
+.ctag .x{color:#c62828;cursor:pointer;font-weight:700;font-size:15px;line-height:1}
+.frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.frow:last-child{margin-bottom:0}
+.frow input,.frow select{padding:7px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit}
+.frow label{font-size:13px;color:#555;white-space:nowrap;flex-shrink:0}
+.notice{background:#fffde7;border-left:4px solid #f9a825;padding:9px 13px;font-size:13px;color:#5d4037;border-radius:0 6px 6px 0;margin-bottom:12px;line-height:1.5}
+.rdot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle;border:1px solid rgba(0,0,0,.1)}
+.col-hdr{display:flex;gap:7px;font-size:12px;color:#888;padding:0 4px 5px;font-weight:600}
+.col-hdr>*{min-width:0}
+/* Readonly mode */
+body.readonly .tabs .tab:not(:first-child){display:none}
+body.readonly .toolbar .btn:not(.btn-green):not(.btn-cloud){display:none}
+body.readonly #cloud-status{display:inline-flex}
+body.readonly .seat{cursor:default!important}
+body.readonly .seat:hover{filter:none!important}
+body.readonly .officer-cell{cursor:default!important}
+@media print{header,.toolbar,.legend{display:none!important}body{background:#fff}main{padding:4px;max-width:none}.panel{display:block!important}#tab-weekly,#tab-members,#tab-officers,#tab-chains{display:none!important}.chart-wrap{box-shadow:none;padding:4px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="brand-icon">🏆</span>
+    <span class="brand-title">BNI 高雄富鼎分會</span>
+    <span class="brand-sub">座位管理系統</span>
+    <span class="readonly-badge" id="ro-badge" style="display:none">👁️ 唯讀模式</span>
+  </div>
+  <nav class="tabs">
+    <button class="tab on"  onclick="gotoTab('seating',this)">📊 座位圖</button>
+    <button class="tab"     onclick="gotoTab('weekly',this)">📝 本週設定</button>
+    <button class="tab"     onclick="gotoTab('officers',this)">🎖️ 幹部職位</button>
+    <button class="tab"     onclick="gotoTab('members',this)">👥 成員管理</button>
+    <button class="tab"     onclick="gotoTab('chains',this)">🔗 產業服務鏈</button>
+  </nav>
+</header>
+<main>
+
+<!-- 座位圖 -->
+<div id="tab-seating" class="panel on">
+  <div class="toolbar">
+    <button class="btn btn-gold"  onclick="autoGenerate()">⚡ 自動產生座位圖</button>
+    <button class="btn btn-green" onclick="exportPDF()">📄 匯出 PDF</button>
+    <button class="btn btn-cloud-save" onclick="cloudSave()">☁️ 存到雲端</button>
+    <button class="btn btn-cloud" onclick="cloudLoad()">☁️ 從雲端載入</button>
+    <span id="cloud-status"></span>
+    <div style="flex:1"></div>
+    <button class="btn btn-slate" onclick="exportJSON()">💾 本機備份</button>
+    <label  class="btn btn-slate">📂 本機還原<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
+    <button class="btn btn-slate" onclick="openCloudModal()">⚙️ 雲端設定</button>
+    <button class="btn btn-blue" onclick="addSeatRow()">＋ 新增座位列</button>
+  </div>
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#f9e04b"></div>來賓</div>
+    <div class="leg"><div class="leg-dot" style="background:#4e87c8"></div>締結組</div>
+    <div class="leg"><div class="leg-dot" style="background:#5fa83e"></div>導生</div>
+    <div class="leg"><div class="leg-dot" style="background:#e87ca0"></div>導師</div>
+    <div class="leg"><div class="leg-dot" style="background:#7b52ab"></div>接待組</div>
+    <div class="leg"><div class="leg-dot" style="background:#f4f4f4;border-color:#ccc"></div>一般會員</div>
+    <div class="leg"><div class="leg-dot" style="background:#8B0000"></div>代理人</div>
+    <div class="leg"><div class="leg-dot" style="background:#2E4899"></div>幹部（第一排）</div>
+  </div>
+  <div class="chart-wrap"><div id="pa"></div></div>
+</div>
+
+<!-- 本週設定 -->
+<div id="tab-weekly" class="panel">
+  <div class="notice">💡 每週填入來賓配對（可設分數）與代理人資訊後，按「⚡ 自動產生」即可更新座位圖。</div>
+  <div class="card">
+    <div class="card-head">🎯 主席 &amp; 電腦手</div>
+    <div class="frow"><label>主席：</label><select id="w-chair" onchange="saveWeeklyBasic()" style="min-width:160px"><option value="">— 請選擇 —</option></select></div>
+    <div class="frow"><label>電腦手①：</label><select id="w-comp1" onchange="saveWeeklyBasic()" style="min-width:150px"></select><label style="margin-left:6px">電腦手②：</label><select id="w-comp2" onchange="saveWeeklyBasic()" style="min-width:150px"></select></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🟡 來賓配對</div>
+    <div class="col-hdr">
+      <div style="flex:1">來賓姓名</div>
+      <div style="width:4px"></div>
+      <div style="flex:1">接待會員</div>
+      <div style="width:105px;text-align:center">優先分數</div>
+      <div style="width:26px"></div>
+    </div>
+    <div class="pair-list" id="gp-list"></div>
+    <button class="btn btn-blue" style="margin-top:10px" onclick="addGP()">＋ 新增來賓配對</button>
+  </div>
+
+  <div class="card">
+    <div class="card-head">🔴 代理人</div>
+    <div class="pair-list" id="abs-list"></div>
+    <button class="btn btn-red" style="margin-top:10px" onclick="addAbs()">＋ 新增代理人</button>
+  </div>
+
+  <button class="btn btn-gold" onclick="autoGenerate();gotoTab('seating',document.querySelectorAll('.tab')[0])">⚡ 儲存並產生座位圖</button>
+</div>
+
+<!-- 幹部職位 -->
+<div id="tab-officers" class="panel">
+  <div class="notice">💡 第一排由左至右共 6 個固定席位，請為每個職位指定對應會員。</div>
+  <div class="card">
+    <div class="card-head">🎖️ 第一排幹部席位指派</div>
+    <table class="off-tbl">
+      <thead><tr><th style="width:36px">位</th><th>職稱</th><th>指派會員</th></tr></thead>
+      <tbody id="officer-tbody"></tbody>
+    </table>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f0f0f0">
+      <button class="btn btn-gold" onclick="saveOfficers()">✅ 儲存幹部指派</button>
+    </div>
+  </div>
+</div>
+
+<!-- 成員管理 -->
+<div id="tab-members" class="panel">
+  <div class="card">
+    <div class="card-head">➕ 新增成員</div>
+    <div class="frow">
+      <input type="text" id="nm-name" placeholder="姓名" style="width:110px" onkeydown="if(event.key==='Enter')addMember()">
+      <select id="nm-role">
+        <option value="regular">一般會員</option><option value="binding">締結組</option>
+        <option value="mentor">導師</option><option value="mentee">導生</option>
+        <option value="reception">接待組</option><option value="chairman">主席</option>
+        <option value="computer">電腦手</option>
+      </select>
+      <select id="nm-chain" style="min-width:140px"><option value="">— 無產業鏈 —</option></select>
+      <button class="btn btn-blue" onclick="addMember()">新增</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">👥 成員列表 <span id="mcnt" style="font-size:12px;font-weight:400;color:#888"></span></div>
+    <div style="overflow-x:auto">
+      <table class="mtbl">
+        <thead><tr>
+          <th style="width:100px">姓名</th><th style="width:110px">身分</th>
+          <th style="width:140px">產業服務鏈</th><th style="width:150px">導師/導生配對</th>
+          <th style="width:130px">幹部職位</th><th style="width:70px">操作</th>
+        </tr></thead>
+        <tbody id="mbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 產業服務鏈 -->
+<div id="tab-chains" class="panel">
+  <div class="card">
+    <div class="card-head">🔗 產業服務鏈管理</div>
+    <p style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.6">建立鏈後，到「成員管理」為每位成員指定所屬鏈。自動排座時，同鏈成員會優先相鄰。</p>
+    <div class="frow">
+      <input type="text" id="chain-in" placeholder="例如：第一鏈" style="width:200px" onkeydown="if(event.key==='Enter')addChain()">
+      <button class="btn btn-blue" onclick="addChain()">新增</button>
+    </div>
+    <div class="chain-tags" id="chain-list"></div>
+  </div>
+</div>
+
+
+<!-- Edit Seat Modal -->
+<div class="em-bg" id="em-modal" onclick="if(event.target===this)closeEditModal()">
+  <div class="em-box">
+    <div class="em-head">✏️ 編輯座位</div>
+    <input type="text" id="em-name" placeholder="輸入姓名…"
+      onkeydown="if(event.key==='Enter')saveEditModal()"
+      style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit;margin-bottom:14px;transition:border-color .15s"
+      onfocus="this.style.borderColor='#2E4899';this.style.boxShadow='0 0 0 3px rgba(46,72,153,.1)'"
+      onblur="this.style.borderColor='#ddd';this.style.boxShadow='none'">
+    <div style="font-size:12px;color:#888;font-weight:600;letter-spacing:.3px;margin-bottom:2px">顏色 / 身分</div>
+    <div class="em-swatches" id="em-swatches"></div>
+    <div class="em-actions">
+      <button class="btn btn-red btn-sm" onclick="clearEditCell()">🗑 清空</button>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-slate btn-sm" onclick="closeEditModal()">取消</button>
+        <button class="btn btn-gold btn-sm" onclick="saveEditModal()">✅ 儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Cloud Settings Modal -->
+<div class="modal-bg" id="cloudModal">
+  <div class="modal">
+    <h3>☁️ 雲端備份設定（JSONBin.io）</h3>
+    <p class="modal-hint">
+      請先到 <a href="https://jsonbin.io" target="_blank" style="color:#1a73e8">jsonbin.io</a> 免費註冊，取得 <strong>Master Key</strong>（或權限受限的 Access Key），並建立一個 Bin 後取得 <strong>Bin ID</strong>。
+    </p>
+    <label>X-Master-Key 或 X-Access-Key</label>
+    <input type="password" id="jb-key" placeholder="$2b$10$...">
+    <label>Bin ID</label>
+    <input type="text" id="jb-bin" placeholder="64a3f2...">
+    <p class="modal-hint" style="margin-top:8px">⚠️ 這組設定只存在你的瀏覽器裡，不會上傳到任何地方。<br>📌 給夥伴唯讀模式使用時，建議用 Access Key 並只開 READ 權限。</p>
+    <div class="modal-actions">
+      <button class="btn btn-slate" onclick="closeCloudModal()">取消</button>
+      <button class="btn btn-cloud" onclick="saveCloudSettings()">✅ 儲存設定</button>
+    </div>
+  </div>
+</div>
+
+</main>
+<script>
+'use strict';
+
+// ── READONLY MODE DETECTION ──
+const IS_READONLY = new URLSearchParams(location.search).get('readonly') === '1';
+
+const OFFICER_SLOTS=[
+  {pos:0,title:'活動協調員'},{pos:1,title:'成長協調員'},
+  {pos:2,title:'導師協調員'},{pos:3,title:'秘書財務'},
+  {pos:4,title:'副主席'},{pos:5,title:'教育協調員'},
+];
+const RLABEL={regular:'一般會員',binding:'締結組',mentor:'導師',mentee:'導生',reception:'接待組',chairman:'主席',computer:'電腦手',guest:'來賓',deputy:'代理人',empty:''};
+const RCSS={regular:'rc-regular',binding:'rc-binding',mentor:'rc-mentor',mentee:'rc-mentee',reception:'rc-reception',chairman:'rc-front',computer:'rc-front',guest:'rc-guest',deputy:'rc-deputy',empty:'seat-e'};
+const RCOLOR={regular:'#f4f4f4',binding:'#4e87c8',mentor:'#e87ca0',mentee:'#5fa83e',reception:'#7b52ab',chairman:'#2E4899',computer:'#8B6914',guest:'#f9e04b',deputy:'#8B0000',empty:'#f9f9f9'};
+const SCORE_LABEL={1:'★ 1',2:'★★ 2',3:'★★★ 3（預設）',4:'★★★★ 4',5:'★★★★★ 5'};
+
+let D={members:[],chains:[],weekly:{chairman:'',comp1:'',comp2:'',gps:[],abs:[]},officerSlots:Array(6).fill(null),seating:null};
+
+// ── SANITIZE (防止雲端/本機資料缺欄位導致崩潰) ──
+function sanitizeData(raw){
+  const d=raw&&typeof raw==='object'?raw:{};
+  if(!Array.isArray(d.members)) d.members=[];
+  if(!Array.isArray(d.chains)) d.chains=[];
+  if(!d.weekly||typeof d.weekly!=='object') d.weekly={};
+  if(typeof d.weekly.chairman!=='string') d.weekly.chairman='';
+  if(typeof d.weekly.comp1!=='string') d.weekly.comp1='';
+  if(typeof d.weekly.comp2!=='string') d.weekly.comp2='';
+  if(!Array.isArray(d.weekly.gps)) d.weekly.gps=[];
+  if(!Array.isArray(d.weekly.abs)) d.weekly.abs=[];
+  if(!Array.isArray(d.officerSlots)||d.officerSlots.length!==6) d.officerSlots=Array(6).fill(null);
+  if(!d.seating||!Array.isArray(d.seating)) d.seating=null;
+  d.weekly.gps.forEach(p=>{if(!p.score)p.score=3;});
+  d.chains.forEach(c=>{if(!('repId' in c))c.repId=null;});
+  // Migration: old abs 可能是 [{name,dep}] → 現在是 ID 陣列
+  if(d.weekly.abs.length&&typeof d.weekly.abs[0]==='object'){
+    d.weekly.abs=d.weekly.abs.map(a=>{
+      const m=d.members.find(x=>x.name===a.name);return m?m.id:'';
+    }).filter(Boolean);
+  }
+  return d;
+}
+
+function seed(){
+  const M=[
+    {id:'m01',name:'蔡宜倩',role:'chairman',chain:null,pair:null},
+    {id:'m02',name:'賴玉軒',role:'computer',chain:null,pair:null},
+    {id:'m03',name:'黃信華',role:'computer',chain:null,pair:null},
+    {id:'m04',name:'景國強',role:'regular',chain:null,pair:null},
+    {id:'m05',name:'郭泓志',role:'regular',chain:null,pair:null},
+    {id:'m06',name:'黃筑憶',role:'regular',chain:null,pair:null},
+    {id:'m07',name:'鍾易峻',role:'regular',chain:null,pair:null},
+    {id:'m37',name:'高毓靜',role:'regular',chain:null,pair:null},
+    {id:'m67',name:'陳鳳伶',role:'regular',chain:null,pair:null},
+  ];
+  const officerSlots=['m67','m05','m06','m07','m04','m37'];
+  const weekly={chairman:'m01',comp1:'m02',comp2:'m03',gps:[],abs:[]};
+  return sanitizeData({members:M,chains:[],weekly,officerSlots,seating:null});
+}
+
+// ── RENDER CHART ──
+function renderChart(){
+  D=sanitizeData(D); // 每次 render 前都確保資料完整
+  const{members:M,weekly:W,officerSlots:OS,seating:S}=D;
+  const byId=id=>M.find(m=>m.id===id)||{name:'',role:''};
+  const chair=byId(W.chairman),c1=byId(W.comp1),c2=byId(W.comp2);
+
+  let h=`<div class="top-row">
+    <div class="stage-box">舞　台</div>
+    <div class="chair-box"><div class="box-lbl">主席</div><div class="box-name">${xe(chair.name||'—')}</div></div>
+    <div></div>
+    <div class="comp-box"><div class="box-lbl">電腦手</div><div class="box-name">${xe(c1.name||'—')}</div><div class="box-name">${xe(c2.name||'—')}</div></div>
+  </div>`;
+
+  const dragAttr=IS_READONLY?'':' draggable="true"';
+  const dragEvents=IS_READONLY?'':' ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)"';
+  const officerClick=IS_READONLY?'':' onclick="gotoTab(\'officers\')"';
+
+  h+=`<div class="officer-row"><div class="officer-group">`;
+  for(let pos=0;pos<3;pos++){
+    const mid=OS[pos],m=mid?byId(mid):null,empty=!m||!m.name;
+    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}"${dragAttr} data-row="-1" data-col="${pos}"${dragEvents}${officerClick}>
+      <div class="off-title">${xe(OFFICER_SLOTS[pos].title)}</div>
+      <div class="off-name">${xe(m&&m.name?m.name:'（未指派）')}</div>
+    </div>`;
+  }
+  h+=`</div><div class="officer-mid-gap"></div><div class="officer-group">`;
+  for(let pos=3;pos<6;pos++){
+    const mid=OS[pos],m=mid?byId(mid):null,empty=!m||!m.name;
+    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}"${dragAttr} data-row="-1" data-col="${pos}"${dragEvents}${officerClick}>
+      <div class="off-title">${xe(OFFICER_SLOTS[pos].title)}</div>
+      <div class="off-name">${xe(m&&m.name?m.name:'（未指派）')}</div>
+    </div>`;
+  }
+  h+=`</div></div>`;
+
+  const sepCell=ci=>{
+    if(ci===0||ci===2||ci===4) return `<td class="sep-tbl"></td>`;
+    if(ci===1||ci===3)         return `<td class="sep-aisle"></td>`;
+    return '';
+  };
+
+  h+=`<table class="sg" id="sg">
+  <colgroup>
+    <col style="width:22px"><col><col style="width:6px"><col><col style="width:18px"><col><col style="width:6px"><col><col style="width:18px"><col><col style="width:6px"><col><col style="width:22px">
+  </colgroup>`;
+  if(S&&S.length){
+    S.forEach((row,ri)=>{
+      h+=`<tr><td class="rn">${ri+1}</td>`;
+      row.forEach((cell,ci)=>{
+        const r=cell?cell.r:'empty',n=cell?cell.n:'',s=cell?cell.s:0;
+        const css=RCSS[r]||'rc-regular',empty=(r==='empty');
+        const stag=(r==='guest'&&s&&s!==3)?`<span class="score-badge">${s}★</span>`:'';
+        const customStyle=cell&&cell.color?` style="background:${cell.color}!important;color:${textColor(cell.color)}"`:'' ;
+        const cellDrag=(!empty&&!IS_READONLY)?' draggable="true"':'';
+        const cellEvents=IS_READONLY?'':` ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)" onclick="editCell(${ri},${ci})"`;
+        h+=`<td class="seat ${css}"${customStyle}${cellDrag} data-row="${ri}" data-col="${ci}"${cellEvents}>${xe(n)}${stag}</td>`;
+        if(ci<5) h+=sepCell(ci);
+      });
+      h+=`<td class="rn">${ri+1}</td></tr>`;
+    });
+  }else{
+    h+=`<tr><td colspan="13" style="text-align:center;padding:40px;color:#aaa;font-size:14px">${IS_READONLY?'尚無座位資料。':'請到「本週設定」填入資料，再按「⚡ 自動產生座位圖」。'}</td></tr>`;
+  }
+  h+=`</table>`;
+  document.getElementById('pa').innerHTML=h;
+}
+
+
+// ── SHUFFLE HELPER ──
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+// ── AUTO GENERATE ──
+function autoGenerate(){
+  const{members:M,weekly:W,chains,officerSlots:OS}=D;
+  const byId=id=>M.find(m=>m.id===id);
+  const COLS=6;
+  const placed=new Set();
+  let grid=[];
+  const E=()=>({n:'',r:'empty'});
+  const newRow=()=>Array(COLS).fill(null).map(E);
+  const mark=n=>{if(n)placed.add(n)};
+
+  const colCount=Array(COLS).fill(0);
+  const shortestCol=()=>{
+    const min=Math.min(...colCount);
+    const ties=[];
+    for(let i=0;i<COLS;i++){if(colCount[i]===min)ties.push(i);}
+    return ties[Math.floor(Math.random()*ties.length)];
+  };
+  const shortestNCols=(n)=>{
+    const order=[...Array(COLS).keys()].sort((a,b)=>colCount[a]-colCount[b]||Math.random()-.5);
+    return order.slice(0,n);
+  };
+
+  OS.forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+  [W.chairman,W.comp1,W.comp2].forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+  (W.abs||[]).forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+
+  // STEP 1: 來賓配對
+  const scoreGroups={};
+  (W.gps||[]).forEach(p=>{const s=p.score||3;(scoreGroups[s]=scoreGroups[s]||[]).push(p);});
+  const gps=Object.keys(scoreGroups).sort((a,b)=>b-a).flatMap(s=>shuffle(scoreGroups[s]));
+  const makeCO=()=>{
+    const mid=[2,3],outer=shuffle([1,4]),edge=shuffle([0,5]);
+    return[...mid,...outer,...edge];
+  };
+  if(gps.length>0){
+    let gi=0,first=true;
+    while(gi<gps.length){
+      const gs=Math.min(COLS,gps.length-gi);
+      const CO=makeCO();
+      const bRow=newRow(),gRow=newRow();
+      for(let k=0;k<gs;k++){
+        const col=CO[k],p=gps[gi+k];
+        const bm=byId(p.bid),bn=bm?bm.name:(p.bid||'');
+        bRow[col]={n:bn,r:'binding'};
+        gRow[col]={n:p.guest,r:'guest',s:p.score||3};
+        mark(bn);mark(p.guest);
+        colCount[col]+=2;
+      }
+      if(first){grid.push(bRow);grid.push(gRow);first=false;}
+      else{grid.push(gRow);grid.push(bRow);}
+      gi+=gs;
+    }
+  }
+
+  // STEP 2: 導生 × 導師
+  const menteeList=M.filter(m=>m.role==='mentee'&&!placed.has(m.name));
+  const mentorGroupMap={};
+  for(const me of menteeList){
+    if(!me.pair) continue;
+    const mo=byId(me.pair);
+    if(!mo) continue;
+    if(!mentorGroupMap[mo.id]) mentorGroupMap[mo.id]={mentor:mo,mentees:[]};
+    mentorGroupMap[mo.id].mentees.push(me);
+  }
+  const lonelyMentees=menteeList.filter(me=>!me.pair||!byId(me.pair));
+  const mentorGroups=shuffle(Object.values(mentorGroupMap));
+  for(const grp of mentorGroups){
+    const{mentor,mentees}=grp;
+    if(placed.has(mentor.name)) continue;
+    shuffle(mentees);
+    let bi=0,firstBatch=true;
+    while(bi<mentees.length){
+      const bs=Math.min(COLS,mentees.length-bi);
+      const meR=newRow(),moR=newRow();
+      const cols=shuffle(shortestNCols(bs));
+      for(let k=0;k<bs;k++){
+        const col=cols[k],me=mentees[bi+k];
+        meR[col]={n:me.name,r:'mentee'};
+        colCount[col]++;
+        mark(me.name);
+        if(firstBatch&&k===0){
+          moR[col]={n:mentor.name,r:'mentor'};
+          colCount[col]++;
+        }
+      }
+      if(firstBatch){mark(mentor.name);firstBatch=false;}
+      grid.push(meR);
+      if(moR.some(c=>c.r!=='empty')) grid.push(moR);
+      bi+=bs;
+    }
+  }
+  if(lonelyMentees.length>0){
+    shuffle(lonelyMentees);
+    let li=0;
+    while(li<lonelyMentees.length){
+      const ls=Math.min(COLS,lonelyMentees.length-li);
+      const meR=newRow();
+      const cols=shuffle(shortestNCols(ls));
+      for(let k=0;k<ls;k++){meR[cols[k]]={n:lonelyMentees[li+k].name,r:'mentee'};colCount[cols[k]]++;mark(lonelyMentees[li+k].name);}
+      grid.push(meR);li+=ls;
+    }
+  }
+
+  // STEP 3: 其他會員
+  const skip=['chairman','computer'];
+  const toPlace=M.filter(m=>!skip.includes(m.role)&&!placed.has(m.name)&&m.role!=='reception');
+  const receptionMembers=M.filter(m=>m.role==='reception'&&!placed.has(m.name));
+  const chainMap={};
+  const noChain=[];
+  toPlace.forEach(m=>{
+    if(m.chain){(chainMap[m.chain]=chainMap[m.chain]||[]).push(m);}
+    else noChain.push(m);
+  });
+  Object.values(chainMap).forEach(arr=>shuffle(arr));
+  const chainGroups=shuffle(Object.values(chainMap));
+  shuffle(noChain);
+  const sorted=[...chainGroups.flat(),...noChain];
+  const colCells=Array.from({length:COLS},()=>[]);
+  let prevChain=null,curCol=null;
+  for(const m of sorted){
+    if(m.chain&&m.chain===prevChain&&curCol!==null){
+      if(colCount[curCol]<=Math.min(...colCount)+1){}
+      else{curCol=shortestCol();}
+    }else{curCol=shortestCol();}
+    colCells[curCol].push({n:m.name,r:m.role});
+    colCount[curCol]++;
+    prevChain=m.chain||null;
+  }
+  shuffle(receptionMembers);
+  for(const m of receptionMembers){
+    const c=shortestCol();
+    colCells[c].push({n:m.name,r:'reception'});
+    colCount[c]++;
+    mark(m.name);
+  }
+  const maxNew=Math.max(0,...colCells.map(c=>c.length));
+  for(let ri=0;ri<maxNew;ri++){
+    const row=newRow();
+    for(let ci2=0;ci2<COLS;ci2++){
+      if(ri<colCells[ci2].length) row[ci2]=colCells[ci2][ri];
+    }
+    grid.push(row);
+  }
+
+  // STEP 4: 代理人
+  const absArr=W.abs||[];
+  let deputyRow=null;
+  if(absArr.length>0){
+    const dRow=newRow();
+    absArr.forEach((mid,i)=>{
+      if(i<COLS){const m=byId(mid);dRow[i]={n:(m?m.name:mid)+'(代)',r:'deputy'};}
+    });
+    deputyRow=dRow;
+  }
+
+  // STEP 5: 逐欄壓縮
+  const ROWS=grid.length;
+  for(let ci=0;ci<COLS;ci++){
+    const cells=[];
+    for(let ri=0;ri<ROWS;ri++){const c=grid[ri][ci];if(c&&c.r!=='empty')cells.push(c);}
+    for(let ri=0;ri<ROWS;ri++){grid[ri][ci]=ri<cells.length?cells[ri]:{n:'',r:'empty'};}
+  }
+  while(grid.length>0&&grid[grid.length-1].every(c=>!c||c.r==='empty')) grid.pop();
+  if(deputyRow) grid.push(deputyRow);
+
+  D.seating=grid;save();renderChart();
+}
+
+
+// ── DRAG & DROP (修正版：加 dragend 確保旗標一定會清) ──
+let _src=null,_dragged=false;
+function ds(e){
+  if(IS_READONLY){e.preventDefault();return;}
+  _src=e.currentTarget;
+  _src.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+  _dragged=true;
+  _src.addEventListener('dragend',()=>{
+    cleanup();
+    setTimeout(()=>_dragged=false,100);
+  },{once:true});
+}
+function dov(e){if(IS_READONLY)return;e.preventDefault();e.dataTransfer.dropEffect='move';if(e.currentTarget&&e.currentTarget!==_src)e.currentTarget.classList.add('drag-over');}
+function dl(e){e.currentTarget.classList.remove('drag-over');}
+function dp(e){
+  if(IS_READONLY)return;
+  e.preventDefault();const dst=e.currentTarget;
+  if(!dst||!_src||dst===_src){cleanup();return;}
+  dst.classList.remove('drag-over');
+  const sr=+_src.dataset.row,sc=+_src.dataset.col,dr=+dst.dataset.row,dc=+dst.dataset.col;
+  if(sr===-1&&dr===-1){
+    const OS=D.officerSlots;[OS[sc],OS[dc]]=[OS[dc],OS[sc]];
+  } else if(sr>=0&&dr>=0&&D.seating){
+    const S=D.seating;
+    if(!S[sr]||!S[dr]){cleanup();return;}
+    const srcCell=S[sr][sc];
+    const dstCell=S[dr][dc];
+    const srcEmpty=!srcCell||srcCell.r==='empty';
+    const dstEmpty=!dstCell||dstCell.r==='empty';
+    if(srcEmpty){cleanup();return;}
+    if(dstEmpty){
+      S[dr][dc]=srcCell;
+      S[sr][sc]={n:'',r:'empty'};
+    } else {
+      [S[sr][sc],S[dr][dc]]=[S[dr][dc],S[sr][sc]];
+    }
+  }
+  cleanup();save();renderChart();
+}
+function cleanup(){document.querySelectorAll('.dragging,.drag-over').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});_src=null;}
+
+// ── WEEKLY ──
+function renderWeekly(){
+  const M=D.members.filter(m=>!['guest','deputy','empty'].includes(m.role));
+  const opts=M.map(m=>`<option value="${m.id}">${xe(m.name)}（${RLABEL[m.role]||m.role}）</option>`).join('');
+  const wrap=s=>`<option value="">— 請選擇 —</option>`+s;
+  ['w-chair','w-comp1','w-comp2'].forEach(id=>document.getElementById(id).innerHTML=wrap(opts));
+  document.getElementById('w-chair').value=D.weekly.chairman||'';
+  document.getElementById('w-comp1').value=D.weekly.comp1||'';
+  document.getElementById('w-comp2').value=D.weekly.comp2||'';
+  renderGPs();renderAbs();
+}
+function renderGPs(){
+  const M=D.members.filter(m=>!['guest','deputy','empty'].includes(m.role));
+  const mOpts=M.map(m=>`<option value="${m.id}">${xe(m.name)}（${RLABEL[m.role]||m.role}）</option>`).join('');
+  const scoreOpts=Object.entries(SCORE_LABEL).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+  const el=document.getElementById('gp-list');el.innerHTML='';
+  (D.weekly.gps||[]).forEach((p,i)=>{
+    const d=document.createElement('div');d.className='pair-row';
+    d.innerHTML=`
+      <input type="text" placeholder="來賓姓名" value="${xe(p.guest||'')}" oninput="updGP(${i},'guest',this.value)" style="flex:1">
+      <span style="color:#bbb;flex-shrink:0">×</span>
+      <select style="flex:1" onchange="updGP(${i},'bid',this.value)"><option value="">— 接待會員 —</option>${mOpts}</select>
+      <select class="score-sel" onchange="updGP(${i},'score',+this.value)">${scoreOpts}</select>
+      <button class="rm-btn" onclick="rmGP(${i})">×</button>`;
+    el.appendChild(d);
+    d.querySelectorAll('select')[0].value=p.bid||'';
+    d.querySelectorAll('select')[1].value=p.score||3;
+  });
+}
+function addGP(){D.weekly.gps.push({guest:'',bid:'',score:3});renderGPs();}
+function updGP(i,f,v){D.weekly.gps[i][f]=v;save();}
+function rmGP(i){D.weekly.gps.splice(i,1);save();renderGPs();}
+
+function renderAbs(){
+  const M=D.members.filter(m=>!['guest','deputy','empty','chairman','computer'].includes(m.role));
+  const el=document.getElementById('abs-list');el.innerHTML='';
+  const absArr=Array.isArray(D.weekly.abs)?D.weekly.abs:[];
+  absArr.forEach((mid,i)=>{
+    const selMember=D.members.find(m=>m.id===mid);
+    const depName=selMember?selMember.name+'(代)':'（本人姓名）(代)';
+    const d=document.createElement('div');d.className='pair-row';
+    const mOpts=M.map(m=>`<option value="${m.id}"${m.id===mid?' selected':''}>${xe(m.name)}（${RLABEL[m.role]}）</option>`).join('');
+    d.innerHTML=`
+      <select style="flex:1.5" onchange="updAbs(${i},this.value)">
+        <option value="">— 選擇請假會員 —</option>${mOpts}
+      </select>
+      <span style="color:#bbb;flex-shrink:0">→</span>
+      <span style="flex:1;padding:7px 10px;background:#fff8f8;border:1px solid #f5c6cb;border-radius:6px;font-size:13px;color:#8B0000;font-weight:600">${xe(depName)}</span>
+      <button class="rm-btn" onclick="rmAbs(${i})">×</button>`;
+    el.appendChild(d);
+  });
+}
+function addAbs(){
+  if(!Array.isArray(D.weekly.abs))D.weekly.abs=[];
+  D.weekly.abs.push('');renderAbs();
+}
+function updAbs(i,v){
+  if(!Array.isArray(D.weekly.abs))D.weekly.abs=[];
+  D.weekly.abs[i]=v;save();renderAbs();
+}
+function rmAbs(i){D.weekly.abs.splice(i,1);save();renderAbs();}
+function saveWeeklyBasic(){
+  D.weekly.chairman=document.getElementById('w-chair').value;
+  D.weekly.comp1=document.getElementById('w-comp1').value;
+  D.weekly.comp2=document.getElementById('w-comp2').value;
+  save();
+}
+
+// ── OFFICERS ──
+function renderOfficers(){
+  const M=D.members;
+  const allOpts=M.map(m=>`<option value="${m.id}">${xe(m.name)}（${RLABEL[m.role]||m.role}）</option>`).join('');
+  const tbody=document.getElementById('officer-tbody');tbody.innerHTML='';
+  OFFICER_SLOTS.forEach(({pos,title})=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><span class="pos-badge">${pos+1}</span></td><td style="font-weight:600;color:#1a3a6b">${xe(title)}</td>
+      <td><select id="off-sel-${pos}"><option value="">— 未指派 —</option>${allOpts}</select></td>`;
+    tbody.appendChild(tr);
+    document.getElementById(`off-sel-${pos}`).value=D.officerSlots[pos]||'';
+  });
+}
+function saveOfficers(){
+  OFFICER_SLOTS.forEach(({pos})=>{D.officerSlots[pos]=document.getElementById(`off-sel-${pos}`).value||null;});
+  save();renderChart();alert('✅ 幹部指派已儲存，座位圖已更新！');
+}
+
+// ── MEMBERS ──
+function renderMembers(){
+  const{members:M,chains:C,officerSlots:OS}=D;
+  const co=C.map(c=>`<option value="${c.id}">${xe(c.name)}</option>`).join('');
+  document.getElementById('nm-chain').innerHTML=`<option value="">— 無產業鏈 —</option>`+co;
+  document.getElementById('mcnt').textContent=`（共 ${M.length} 人）`;
+  const pairCand=M.filter(m=>['mentor','mentee'].includes(m.role));
+  const tbody=document.getElementById('mbody');tbody.innerHTML='';
+  M.forEach(m=>{
+    const cSel=C.map(c=>`<option value="${c.id}"${m.chain===c.id?' selected':''}>${xe(c.name)}</option>`).join('');
+    const pSel=pairCand.filter(p=>p.id!==m.id).map(p=>`<option value="${p.id}"${m.pair===p.id?' selected':''}>${xe(p.name)}（${RLABEL[p.role]}）</option>`).join('');
+    const slotIdx=OS.indexOf(m.id);
+    const slotLabel=slotIdx>=0?OFFICER_SLOTS[slotIdx].title:'—';
+    const dot=`<span class="rdot" style="background:${RCOLOR[m.role]||'#eee'}"></span>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${dot}${xe(m.name)}</td>
+      <td><select onchange="updM('${m.id}','role',this.value)">${Object.entries(RLABEL).filter(([k])=>!['guest','deputy','empty'].includes(k)).map(([k,v])=>`<option value="${k}"${m.role===k?' selected':''}>${v}</option>`).join('')}</select></td>
+      <td><select onchange="updM('${m.id}','chain',this.value||null)"><option value="">— 無 —</option>${cSel}</select></td>
+      <td>${['mentor','mentee'].includes(m.role)?`<select onchange="updM('${m.id}','pair',this.value||null)"><option value="">— 未配對 —</option>${pSel}</select>`:`<span style="color:#ccc;font-size:12px">—</span>`}</td>
+      <td><span style="font-size:12px;color:${slotIdx>=0?'#1a3a6b':'#bbb'};font-weight:${slotIdx>=0?600:400}">${slotIdx>=0?'🎖️ '+slotLabel:'—'}</span></td>
+      <td><button class="btn btn-red btn-sm" onclick="delM('${m.id}')">刪除</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function addMember(){
+  const name=document.getElementById('nm-name').value.trim();
+  const role=document.getElementById('nm-role').value;
+  const chain=document.getElementById('nm-chain').value||null;
+  if(!name){alert('請輸入姓名');return;}
+  D.members.push({id:'m'+Date.now(),name,role,chain,pair:null});
+  document.getElementById('nm-name').value='';
+  save();renderMembers();
+}
+function updM(id,f,v){
+  const m=D.members.find(x=>x.id===id);if(!m)return;
+  m[f]=v||null;save();if(['role','chain','pair'].includes(f))renderMembers();
+}
+function delM(id){
+  if(!confirm('確定刪除此成員？'))return;
+  D.members=D.members.filter(m=>m.id!==id);
+  D.officerSlots=D.officerSlots.map(s=>s===id?null:s);
+  save();renderMembers();
+}
+
+// ── CHAINS ──
+function renderChains(){
+  const el=document.getElementById('chain-list');el.innerHTML='';
+  D.chains.forEach(c=>{
+    const d=document.createElement('div');d.className='ctag';
+    d.innerHTML=`${xe(c.name)}<span class="x" onclick="delChain('${c.id}')">×</span>`;
+    el.appendChild(d);
+  });
+  const co=D.chains.map(c=>`<option value="${c.id}">${xe(c.name)}</option>`).join('');
+  document.getElementById('nm-chain').innerHTML=`<option value="">— 無產業鏈 —</option>`+co;
+}
+function addChain(){
+  const n=document.getElementById('chain-in').value.trim();if(!n)return;
+  if(D.chains.find(c=>c.name===n)){alert('已有同名鏈');return;}
+  D.chains.push({id:'ch'+Date.now(),name:n});
+  document.getElementById('chain-in').value='';
+  save();renderChains();
+}
+function delChain(id){
+  if(!confirm('刪除此鏈？成員歸屬將清空。'))return;
+  D.chains=D.chains.filter(c=>c.id!==id);
+  D.members.forEach(m=>{if(m.chain===id)m.chain=null;});
+  save();renderChains();
+}
+
+// ── PDF ──
+async function exportPDF(){
+  const el=document.getElementById('pa');
+  try{
+    const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#fff',logging:false});
+    const img=canvas.toDataURL('image/png');
+    const{jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth()-16,ph=pdf.internal.pageSize.getHeight()-16;
+    const iw=pw,ih=(canvas.height*iw)/canvas.width,y=ih<ph?(ph-ih)/2:0;
+    pdf.addImage(img,'PNG',8,8+y,iw,Math.min(ih,ph));
+    const t=new Date(),ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+    pdf.save(`BNI富鼎_座位表_${ds}.pdf`);
+  }catch(e){alert('PDF 匯出失敗：'+e.message);}
+}
+
+// ── PERSISTENCE ──
+function save(){
+  if(IS_READONLY) return; // 唯讀模式不寫入
+  localStorage.setItem('bni_v5',JSON.stringify(D));
+}
+function load(){
+  const raw=localStorage.getItem('bni_v5');
+  if(raw){
+    try{
+      D=sanitizeData(JSON.parse(raw));
+    }catch{D=seed();save();}
+  }else{D=seed();save();}
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;
+  const t=new Date(),ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+  a.download=`BNI富鼎_備份_${ds}.json`;a.click();URL.revokeObjectURL(url);
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{D=sanitizeData(JSON.parse(ev.target.result));save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
+  r.readAsText(f);e.target.value='';
+}
+
+// ── TABS ──
+function gotoTab(tab){
+  if(IS_READONLY&&tab!=='seating')return;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('tab-'+tab).classList.add('on');
+  const map={seating:'座位',weekly:'本週',officers:'幹部',members:'成員',chains:'服務鏈'};
+  document.querySelectorAll('.tab').forEach(b=>{if(b.textContent.includes(map[tab]))b.classList.add('on');});
+  if(tab==='weekly')renderWeekly();
+  if(tab==='officers')renderOfficers();
+  if(tab==='members')renderMembers();
+  if(tab==='chains')renderChains();
+}
+
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── CLOUD (JSONBin.io) ──
+function getCloudCfg(){
+  return{
+    key:localStorage.getItem('jb_key')||'',
+    bin:localStorage.getItem('jb_bin')||''
+  };
+}
+function setCloudStatus(msg,type){
+  const el=document.getElementById('cloud-status');
+  if(!el)return;
+  el.className='cloud-status cs-'+type;
+  el.textContent=msg;
+  if(type==='ok'||type==='err') setTimeout(()=>{el.textContent='';el.className='';},4000);
+}
+async function cloudSave(){
+  if(IS_READONLY){alert('唯讀模式無法儲存');return;}
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
+  // 存檔前先 sanitize，避免存出壞資料
+  D=sanitizeData(D);
+  setCloudStatus('上傳中…','loading');
+  try{
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':key},
+      body:JSON.stringify(D)
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const now=new Date();
+    const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    setCloudStatus(`✅ 已儲存 ${ts}`,'ok');
+    localStorage.setItem('jb_last_save',ts);
+  }catch(e){
+    setCloudStatus('❌ 儲存失敗：'+e.message,'err');
+    console.error('CloudSave error:',e);
+  }
+}
+async function cloudLoad(){
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
+  setCloudStatus('載入中…','loading');
+  try{
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
+      headers:{'X-Master-Key':key}
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    D=sanitizeData(json.record);
+    if(!IS_READONLY) save();
+    renderChart();
+    if(document.getElementById('tab-weekly').classList.contains('on')) renderWeekly();
+    if(document.getElementById('tab-members').classList.contains('on')) renderMembers();
+    if(document.getElementById('tab-chains').classList.contains('on')) renderChains();
+    if(document.getElementById('tab-officers').classList.contains('on')) renderOfficers();
+    setCloudStatus('✅ 載入成功','ok');
+  }catch(e){
+    setCloudStatus('❌ 載入失敗：'+e.message,'err');
+    console.error('CloudLoad error:',e);
+  }
+}
+async function cloudAutoLoad(){
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){
+    if(IS_READONLY) setCloudStatus('⚠️ 請先設定雲端金鑰','err');
+    return;
+  }
+  setCloudStatus('自動載入…','loading');
+  try{
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
+      headers:{'X-Master-Key':key}
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    D=sanitizeData(json.record);
+    if(!IS_READONLY) save();
+    renderChart();
+    setCloudStatus('✅ 已同步雲端','ok');
+  }catch(e){
+    setCloudStatus('（雲端離線，使用本機資料）','err');
+    console.error('CloudAutoLoad error:',e);
+  }
+}
+function openCloudModal(){
+  const{key,bin}=getCloudCfg();
+  document.getElementById('jb-key').value=key;
+  document.getElementById('jb-bin').value=bin;
+  document.getElementById('cloudModal').classList.add('open');
+}
+function closeCloudModal(){
+  document.getElementById('cloudModal').classList.remove('open');
+}
+function saveCloudSettings(){
+  const key=document.getElementById('jb-key').value.trim();
+  const bin=document.getElementById('jb-bin').value.trim();
+  if(!key||!bin){alert('請填入 Master Key 與 Bin ID');return;}
+  localStorage.setItem('jb_key',key);
+  localStorage.setItem('jb_bin',bin);
+  closeCloudModal();
+  alert('✅ 雲端設定已儲存！');
+  // 存完自動重載一次
+  cloudAutoLoad();
+}
+document.addEventListener('click',e=>{
+  if(e.target.id==='cloudModal') closeCloudModal();
+});
+
+// ── EDIT SEAT MODAL ──
+const COLOR_PRESETS=[
+  {label:'一般',   color:'#f4f4f4',role:'regular',   fg:'#333'},
+  {label:'締結組', color:'#4e87c8',role:'binding',   fg:'#fff'},
+  {label:'導生',   color:'#5fa83e',role:'mentee',    fg:'#fff'},
+  {label:'導師',   color:'#e87ca0',role:'mentor',    fg:'#2a0010'},
+  {label:'接待組', color:'#7b52ab',role:'reception', fg:'#fff'},
+  {label:'來賓',   color:'#f9e04b',role:'guest',     fg:'#333'},
+  {label:'代理人', color:'#8B0000',role:'deputy',    fg:'#fff'},
+  {label:'幹部',   color:'#2E4899',role:'chairman',  fg:'#fff'},
+  {label:'橘',     color:'#FF7043',role:'regular',   fg:'#fff', custom:true},
+  {label:'青',     color:'#26C6DA',role:'regular',   fg:'#333', custom:true},
+  {label:'草綠',   color:'#8BC34A',role:'regular',   fg:'#333', custom:true},
+  {label:'金',     color:'#FFC107',role:'regular',   fg:'#333', custom:true},
+];
+
+function textColor(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return(r*299+g*587+b*114)/1000>128?'#222':'#fff';
+}
+
+let _editTarget=null,_selectedSwatch=5;
+
+function buildSwatches(){
+  const el=document.getElementById('em-swatches');
+  if(!el) return;
+  el.innerHTML='';
+  COLOR_PRESETS.forEach((p,i)=>{
+    if(i===8){
+      el.insertAdjacentHTML('beforeend','<div class="em-sep"></div><div class="em-sep-lbl">＋ 自訂顏色</div>');
+    }
+    const checkMark=i===_selectedSwatch?'✓':'';
+    const sw=document.createElement('div');
+    sw.className='em-sw'+(i===_selectedSwatch?' sel':'');
+    sw.innerHTML=`<div class="em-sw-dot" style="background:${p.color};color:${p.fg}" onclick="selectSwatch(${i})">${checkMark}</div><div class="em-sw-lbl">${p.label}</div>`;
+    el.appendChild(sw);
+  });
+}
+
+function selectSwatch(idx){
+  _selectedSwatch=idx;
+  buildSwatches();
+}
+
+function editCell(row,col){
+  if(IS_READONLY) return;
+  if(_dragged) return;
+  if(!D.seating||!D.seating[row]) return;
+  _editTarget={row,col};
+  const cell=D.seating[row][col]||{n:'',r:'empty'};
+  document.getElementById('em-name').value=(cell.r==='empty')?'':(cell.n||'');
+  buildSwatches();
+  let idx=5;
+  if(cell.color){
+    const fi=COLOR_PRESETS.findIndex(p=>p.color.toLowerCase()===cell.color.toLowerCase());
+    if(fi>=0) idx=fi;
+  }else if(cell.r&&cell.r!=='empty'){
+    const fi=COLOR_PRESETS.findIndex(p=>p.role===cell.r);
+    if(fi>=0) idx=fi;
+  }
+  selectSwatch(idx);
+  document.getElementById('em-modal').classList.add('open');
+  setTimeout(()=>{const n=document.getElementById('em-name');n.focus();n.select();},80);
+}
+
+function closeEditModal(){
+  document.getElementById('em-modal').classList.remove('open');
+  _editTarget=null;
+}
+
+function saveEditModal(){
+  if(!_editTarget) return;
+  const{row,col}=_editTarget;
+  const name=document.getElementById('em-name').value.trim();
+  const preset=COLOR_PRESETS[_selectedSwatch]||COLOR_PRESETS[0];
+  const cell={n:name,r:preset.role};
+  if(preset.custom){
+    cell.color=preset.color;
+  } else {
+    const defColor=(RCOLOR[preset.role]||'#f4f4f4').toLowerCase();
+    if(preset.color.toLowerCase()!==defColor) cell.color=preset.color;
+  }
+  if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+  D.seating[row][col]=cell;
+  save();closeEditModal();renderChart();
+}
+
+function clearEditCell(){
+  if(!_editTarget) return;
+  const{row,col}=_editTarget;
+  if(D.seating[row]) D.seating[row][col]={n:'',r:'empty'};
+  save();closeEditModal();renderChart();
+}
+
+function addSeatRow(){
+  if(!D.seating) D.seating=[];
+  const newRow=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+  const last=D.seating[D.seating.length-1];
+  const hasDeputy=last&&last.some(c=>c&&c.r==='deputy');
+  if(hasDeputy) D.seating.splice(D.seating.length-1,0,newRow);
+  else D.seating.push(newRow);
+  save();renderChart();
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  if(IS_READONLY){
+    document.body.classList.add('readonly');
+    document.getElementById('ro-badge').style.display='inline-block';
+  }
+  load();
+  renderChart();
+  cloudAutoLoad();
+});
+</script>
+</body>
+</html>
