@@ -96,6 +96,16 @@ label.btn{cursor:pointer}
 .em-sep{grid-column:1/-1;height:0;border-top:1.5px dashed #e0e0e0;margin:4px 0}
 .em-sep-lbl{grid-column:1/-1;font-size:11px;color:#aaa;margin-bottom:-2px}
 .em-actions{display:flex;justify-content:space-between;margin-top:16px;align-items:center}
+/* Pick Person Modal */
+.pp-group{margin-bottom:8px}
+.pp-group-hdr{font-size:11px;font-weight:700;color:#666;padding:6px 8px 4px;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
+.pp-group-hdr .pp-count{color:#aaa;font-weight:400}
+.pp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:4px;cursor:pointer;font-size:13px;transition:all .1s}
+.pp-item:hover{background:#e8f0fe;border-color:#2E4899;transform:translateX(2px)}
+.pp-item-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+.pp-item-name{font-weight:600;color:#222}
+.pp-item-tag{font-size:11px;color:#888;margin-left:auto}
+.pp-empty{text-align:center;color:#aaa;padding:30px 10px;font-size:13px}
 .seat:hover{filter:brightness(.9)}
 .seat.dragging{opacity:.3}
 .seat.drag-over{outline:3px dashed #c8a84b!important;outline-offset:-2px}
@@ -307,6 +317,29 @@ body.readonly .officer-cell{cursor:default!important}
         <button class="btn btn-slate btn-sm" onclick="closeEditModal()">取消</button>
         <button class="btn btn-gold btn-sm" onclick="saveEditModal()">✅ 儲存</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Pick Person Modal (for empty seats) -->
+<div class="em-bg" id="pp-modal" onclick="if(event.target===this)closePickModal()">
+  <div class="em-box" style="width:380px;max-height:85vh;display:flex;flex-direction:column">
+    <div class="em-head">📍 選擇要入座的人</div>
+    <input type="text" id="pp-search" placeholder="🔍 輸入姓名搜尋…" oninput="renderPickList()"
+      style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:7px;font-size:14px;font-family:inherit;margin-bottom:10px"
+      onfocus="this.style.borderColor='#2E4899'"
+      onblur="this.style.borderColor='#ddd'">
+    <div id="pp-list" style="flex:1;overflow-y:auto;border:1px solid #eee;border-radius:7px;padding:6px;background:#fafafa;min-height:200px;max-height:50vh"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #ddd">
+      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600">✏️ 或手動輸入名字（切換到詳細編輯）</div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="pp-manual" placeholder="例如：臨時外賓" style="flex:1;padding:8px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')goManualEdit()">
+        <button class="btn btn-blue btn-sm" onclick="goManualEdit()">詳細編輯 →</button>
+      </div>
+    </div>
+    <div class="em-actions" style="margin-top:12px">
+      <div></div>
+      <button class="btn btn-slate btn-sm" onclick="closePickModal()">取消</button>
     </div>
   </div>
 </div>
@@ -1161,12 +1194,17 @@ function editCell(row,col){
   if(IS_READONLY) return;
   if(_dragged) return;
   if(!D.seating||!D.seating[row]) return;
-  _editTarget={row,col};
   const cell=D.seating[row][col]||{n:'',r:'empty'};
-  const origName=(cell.r==='empty')?'':(cell.n||'');
+  // 空白格走「選人入座」新 modal
+  if(cell.r==='empty'||!cell.n){
+    openPickModal(row,col);
+    return;
+  }
+  // 有人的格子走原本的編輯視窗
+  _editTarget={row,col};
+  const origName=cell.n||'';
   _editOriginalName=origName;
   document.getElementById('em-name').value=origName;
-  // 代理人格子不顯示同步選項
   const syncWrap=document.getElementById('em-sync-wrap');
   const syncBox=document.getElementById('em-sync');
   if(cell.r==='deputy'){
@@ -1259,6 +1297,167 @@ function clearEditCell(){
   const{row,col}=_editTarget;
   if(D.seating[row]) D.seating[row][col]={n:'',r:'empty'};
   save();closeEditModal();renderChart();
+}
+
+// ── PICK PERSON MODAL ──
+let _pickTarget=null;
+
+function openPickModal(row,col){
+  _pickTarget={row,col};
+  document.getElementById('pp-search').value='';
+  document.getElementById('pp-manual').value='';
+  renderPickList();
+  document.getElementById('pp-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('pp-search').focus(),80);
+}
+
+function closePickModal(){
+  document.getElementById('pp-modal').classList.remove('open');
+  _pickTarget=null;
+}
+
+// 計算哪些人還沒入座
+function getUnseatedCandidates(){
+  const seated=new Set();
+  // 掃描座位圖現有人員
+  if(D.seating&&Array.isArray(D.seating)){
+    D.seating.forEach(r=>r.forEach(c=>{
+      if(c&&c.n&&c.r!=='empty'){
+        let n=c.n;
+        // 代理人名字會帶 (代) 後綴
+        if(c.r==='deputy') n=n.replace(/\(代\)$/,'');
+        seated.add(n);
+      }
+    }));
+  }
+  // 扣掉主席、電腦手、幹部
+  const specialIds=[D.weekly.chairman,D.weekly.comp1,D.weekly.comp2,...D.officerSlots].filter(Boolean);
+  specialIds.forEach(id=>{
+    const m=D.members.find(x=>x.id===id);
+    if(m) seated.add(m.name);
+  });
+  // 扣掉請假會員（已由代理人代替）
+  (D.weekly.abs||[]).forEach(id=>{
+    const m=D.members.find(x=>x.id===id);
+    if(m) seated.add(m.name);
+  });
+
+  // 未入座會員
+  const unseatedMembers=D.members.filter(m=>!seated.has(m.name)&&!['guest','deputy','empty'].includes(m.role));
+
+  // 未入座來賓（從本週來賓配對中找）
+  const unseatedGuests=[];
+  (D.weekly.gps||[]).forEach(p=>{
+    if(p.guest&&!seated.has(p.guest)){
+      const bm=D.members.find(x=>x.id===p.bid);
+      unseatedGuests.push({
+        name:p.guest,
+        bindingName:bm?bm.name:'',
+        score:p.score||3,
+        isGuest:true
+      });
+    }
+  });
+
+  return{guests:unseatedGuests,members:unseatedMembers};
+}
+
+function renderPickList(){
+  const list=document.getElementById('pp-list');
+  const q=(document.getElementById('pp-search').value||'').trim().toLowerCase();
+  const{guests,members}=getUnseatedCandidates();
+
+  // 搜尋過濾
+  const fg=q?guests.filter(g=>g.name.toLowerCase().includes(q)):guests;
+  const fm=q?members.filter(m=>m.name.toLowerCase().includes(q)):members;
+
+  if(fg.length===0&&fm.length===0){
+    list.innerHTML=`<div class="pp-empty">${q?'🔍 找不到符合的人':'✨ 所有人都已入座'}</div>`;
+    return;
+  }
+
+  // 會員按身分分組排序
+  const groupOrder=['binding','mentor','mentee','reception','regular'];
+  const groupLabel={binding:'💼 締結組',mentor:'👨‍🏫 導師',mentee:'📚 導生',reception:'🤝 接待組',regular:'👥 一般會員'};
+  const byGroup={};
+  fm.forEach(m=>{
+    const g=groupOrder.includes(m.role)?m.role:'regular';
+    (byGroup[g]=byGroup[g]||[]).push(m);
+  });
+
+  let h='';
+
+  // 來賓區塊
+  if(fg.length>0){
+    h+=`<div class="pp-group">
+      <div class="pp-group-hdr">🟡 本週來賓 <span class="pp-count">(${fg.length})</span></div>`;
+    fg.forEach(g=>{
+      const stars=g.score&&g.score!==3?` ★${g.score}`:'';
+      const tag=g.bindingName?`接待：${g.bindingName}${stars}`:stars;
+      h+=`<div class="pp-item" onclick="pickGuest('${xe(g.name).replace(/'/g,"\\'")}','${xe(g.bindingName).replace(/'/g,"\\'")}',${g.score||3})">
+        <div class="pp-item-dot" style="background:${RCOLOR.guest}"></div>
+        <div class="pp-item-name">${xe(g.name)}</div>
+        <div class="pp-item-tag">${xe(tag)}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+
+  // 會員分組
+  groupOrder.forEach(role=>{
+    const arr=byGroup[role];
+    if(!arr||arr.length===0) return;
+    h+=`<div class="pp-group">
+      <div class="pp-group-hdr">${groupLabel[role]} <span class="pp-count">(${arr.length})</span></div>`;
+    arr.forEach(m=>{
+      h+=`<div class="pp-item" onclick="pickMember('${m.id}')">
+        <div class="pp-item-dot" style="background:${RCOLOR[m.role]||'#f4f4f4'}"></div>
+        <div class="pp-item-name">${xe(m.name)}</div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+
+  list.innerHTML=h;
+}
+
+function pickMember(mid){
+  if(!_pickTarget) return;
+  const m=D.members.find(x=>x.id===mid);
+  if(!m) return;
+  const{row,col}=_pickTarget;
+  const cell={n:m.name,r:m.role};
+  if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+  D.seating[row][col]=cell;
+  save();closePickModal();renderChart();
+}
+
+function pickGuest(name,bindingName,score){
+  if(!_pickTarget) return;
+  const{row,col}=_pickTarget;
+  const cell={n:name,r:'guest'};
+  if(score&&score!==3) cell.s=score;
+  if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+  D.seating[row][col]=cell;
+  save();closePickModal();renderChart();
+}
+
+function goManualEdit(){
+  const name=(document.getElementById('pp-manual').value||'').trim();
+  if(!_pickTarget) return;
+  const{row,col}=_pickTarget;
+  closePickModal();
+  // 開原本的詳細編輯視窗，預填名字
+  _editTarget={row,col};
+  _editOriginalName='';
+  document.getElementById('em-name').value=name;
+  document.getElementById('em-sync-wrap').style.display='flex';
+  document.getElementById('em-sync').checked=false;
+  updateSyncHint();
+  buildSwatches();
+  selectSwatch(0); // 預設一般會員
+  document.getElementById('em-modal').classList.add('open');
+  setTimeout(()=>{const n=document.getElementById('em-name');n.focus();n.select();},80);
 }
 
 function addSeatRow(){
