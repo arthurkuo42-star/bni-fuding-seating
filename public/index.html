@@ -106,6 +106,11 @@ label.btn{cursor:pointer}
 .pp-item-name{font-weight:600;color:#222}
 .pp-item-tag{font-size:11px;color:#888;margin-left:auto}
 .pp-empty{text-align:center;color:#aaa;padding:30px 10px;font-size:13px}
+/* Guest score star picker */
+.em-star{flex:1;text-align:center;cursor:pointer;padding:6px 2px;border-radius:5px;font-size:18px;user-select:none;transition:all .1s;border:1.5px solid transparent}
+.em-star:hover{background:rgba(200,168,75,.15)}
+.em-star.sel{background:#c8a84b;border-color:#8a6d00;color:#fff;transform:scale(1.05)}
+.em-star-lbl{font-size:9px;display:block;margin-top:1px}
 .seat:hover{filter:brightness(.9)}
 .seat.dragging{opacity:.3}
 .seat.drag-over{outline:3px dashed #c8a84b!important;outline-offset:-2px}
@@ -306,9 +311,13 @@ body.readonly .officer-cell{cursor:default!important}
       onblur="this.style.borderColor='#ddd';this.style.boxShadow='none'">
     <div style="font-size:12px;color:#888;font-weight:600;letter-spacing:.3px;margin-bottom:2px">顏色 / 身分</div>
     <div class="em-swatches" id="em-swatches"></div>
-    <label id="em-sync-wrap" style="display:flex;align-items:center;gap:8px;margin-top:14px;padding:10px 12px;background:#f5f8ff;border:1px solid #c8d4ec;border-radius:7px;cursor:pointer;font-size:13px;color:#1a3a6b">
-      <input type="checkbox" id="em-sync" onchange="updateSyncHint()" style="width:16px;height:16px;cursor:pointer;accent-color:#2E4899">
-      <span>🔄 同步更新成員管理（修改名冊中的名字）</span>
+    <div id="em-guest-score" style="display:none;margin-top:12px;padding:10px 12px;background:#fffbe6;border:1px solid #f0d974;border-radius:7px">
+      <div style="font-size:11px;color:#8a6d00;font-weight:700;margin-bottom:6px;letter-spacing:.3px">🟡 來賓優先分數</div>
+      <div id="em-score-stars" style="display:flex;gap:4px;justify-content:space-between"></div>
+    </div>
+    <label id="em-sync-wrap" style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 12px;background:#f5f8ff;border:1px solid #c8d4ec;border-radius:7px;cursor:pointer;font-size:13px;color:#1a3a6b;line-height:1.4">
+      <input type="checkbox" id="em-sync" onchange="updateSyncHint()" style="width:16px;height:16px;cursor:pointer;accent-color:#2E4899;flex-shrink:0;margin-top:1px">
+      <span>🔄 同步更新成員管理 / 本週設定<br><span style="font-size:11px;color:#6b7c9e;font-weight:400">包含名字、身分、來賓清單變動</span></span>
     </label>
     <div id="em-sync-hint" style="font-size:11px;color:#888;margin-top:6px;line-height:1.5;display:none"></div>
     <div class="em-actions">
@@ -1146,9 +1155,35 @@ function buildSwatches(){
   });
 }
 
+let _editGuestScore=3;
+
 function selectSwatch(idx){
   _selectedSwatch=idx;
   buildSwatches();
+  // 來賓色塊(index 5)選中時顯示分數選擇
+  const scoreWrap=document.getElementById('em-guest-score');
+  if(scoreWrap){
+    if(idx===5){
+      scoreWrap.style.display='block';
+      buildScorePicker();
+    }else{
+      scoreWrap.style.display='none';
+    }
+  }
+  updateSyncHint();
+}
+
+function buildScorePicker(){
+  const el=document.getElementById('em-score-stars');
+  if(!el) return;
+  el.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const d=document.createElement('div');
+    d.className='em-star'+(i===_editGuestScore?' sel':'');
+    d.innerHTML='★'.repeat(i)+'<span class="em-star-lbl">'+i+'星</span>';
+    d.onclick=()=>{_editGuestScore=i;buildScorePicker();};
+    el.appendChild(d);
+  }
 }
 
 // 即時更新同步提示
@@ -1158,34 +1193,82 @@ function updateSyncHint(){
   if(!hint||!syncBox) return;
   if(!syncBox.checked){hint.style.display='none';return;}
   const newName=(document.getElementById('em-name').value||'').trim();
+  const preset=COLOR_PRESETS[_selectedSwatch]||COLOR_PRESETS[0];
+  const newRole=preset.role;
+  const msgs=[];
+
   if(!newName){
     hint.textContent='⚠️ 姓名為空，無法同步';
     hint.style.color='#c62828';
     hint.style.display='block';
     return;
   }
+
   const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
+  const origCell=(_editTarget&&D.seating&&D.seating[_editTarget.row])?D.seating[_editTarget.row][_editTarget.col]:null;
+  const origRole=origCell?origCell.r:'empty';
+  const isNewGuest=newRole==='guest';
+  const wasGuest=origRole==='guest';
+
+  // 1. 名字變動
   if(origMember&&newName!==_editOriginalName){
     const dup=D.members.find(m=>m.name===newName&&m.id!==origMember.id);
     if(dup){
       hint.textContent=`⚠️ 名冊中已有另一位「${newName}」，無法改名造成重複`;
       hint.style.color='#c62828';
-    }else{
-      hint.textContent=`✏️ 將把名冊中「${_editOriginalName}」改名為「${newName}」`;
-      hint.style.color='#1a3a6b';
+      hint.style.display='block';
+      return;
     }
-  }else if(!origMember&&newName){
+    msgs.push(`✏️ 將把名冊中「${_editOriginalName}」改名為「${newName}」`);
+  }
+
+  // 2. 身分變動（只對名冊成員有意義，且不是來賓↔成員互改的情況）
+  if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
+    msgs.push(`🔄 將把「${origMember.name}」的身分從「${RLABEL[origMember.role]||origMember.role}」改為「${RLABEL[newRole]||newRole}」`);
+    if(['mentor','mentee'].includes(newRole)){
+      msgs.push(`💡 改為${RLABEL[newRole]}後，請到成員管理設定配對對象`);
+    }
+  }
+
+  // 3. 改成來賓
+  if(isNewGuest&&!wasGuest){
+    const existsInMembers=D.members.find(m=>m.name===newName);
+    if(existsInMembers){
+      msgs.push(`ℹ️ 「${newName}」是名冊成員，座位圖將顯示為來賓色，但不會加入本週來賓清單`);
+    }else{
+      const existsInGps=(D.weekly.gps||[]).find(p=>p.guest===newName);
+      if(existsInGps){
+        msgs.push(`ℹ️ 「${newName}」已在本週來賓清單中`);
+      }else{
+        msgs.push(`➕ 將「${newName}」加入本週來賓清單（${_editGuestScore}★，接待會員待補）`);
+      }
+    }
+  }
+
+  // 4. 從來賓改回會員
+  if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
+    const inGps=(D.weekly.gps||[]).find(p=>p.guest===origCell.n);
+    if(inGps){
+      msgs.push(`➖ 將把「${origCell.n}」從本週來賓清單移除`);
+    }
+  }
+
+  // 5. 空格輸入新名字
+  if(!origMember&&!wasGuest&&newName&&newRole!=='deputy'){
     const exists=D.members.find(m=>m.name===newName);
-    if(exists){
-      hint.textContent=`ℹ️ 名冊中已存在「${newName}」，不會重複新增`;
-      hint.style.color='#888';
-    }else{
-      hint.textContent=`➕ 將在名冊中新增「${newName}」為一般會員`;
-      hint.style.color='#137333';
+    if(!exists&&!isNewGuest){
+      msgs.push(`➕ 將在名冊中新增「${newName}」為${RLABEL[newRole]||newRole}`);
+    }else if(exists&&exists.role!==newRole&&!isNewGuest){
+      msgs.push(`🔄 名冊中已有「${newName}」，將同步更新身分為「${RLABEL[newRole]||newRole}」`);
     }
-  }else{
-    hint.textContent='（名字未變更，不影響名冊）';
+  }
+
+  if(msgs.length===0){
+    hint.textContent='（無變更需同步）';
     hint.style.color='#888';
+  }else{
+    hint.innerHTML=msgs.join('<br>');
+    hint.style.color='#1a3a6b';
   }
   hint.style.display='block';
 }
@@ -1204,6 +1287,7 @@ function editCell(row,col){
   _editTarget={row,col};
   const origName=cell.n||'';
   _editOriginalName=origName;
+  _editGuestScore=(cell.r==='guest'&&cell.s)?cell.s:3;
   document.getElementById('em-name').value=origName;
   const syncWrap=document.getElementById('em-sync-wrap');
   const syncBox=document.getElementById('em-sync');
@@ -1245,46 +1329,134 @@ function saveEditModal(){
     const defColor=(RCOLOR[preset.role]||'#f4f4f4').toLowerCase();
     if(preset.color.toLowerCase()!==defColor) cell.color=preset.color;
   }
+  // 來賓格子：記錄分數
+  if(preset.role==='guest'){
+    if(_editGuestScore&&_editGuestScore!==3) cell.s=_editGuestScore;
+  }
 
-  // ── 同步名冊邏輯 ──
+  // ── 同步邏輯 ──
   const syncBox=document.getElementById('em-sync');
   const wantSync=syncBox&&syncBox.checked&&preset.role!=='deputy';
+
   if(wantSync&&name){
     const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
+    const origCell=D.seating[row]?D.seating[row][col]:null;
+    const origRole=origCell?origCell.r:'empty';
+    const newRole=preset.role;
+    const isNewGuest=newRole==='guest';
+    const wasGuest=origRole==='guest';
+
+    // 1. 檢查改名字的重複
     if(origMember&&name!==_editOriginalName){
-      // 改名字：檢查重複
       const dup=D.members.find(m=>m.name===name&&m.id!==origMember.id);
       if(dup){
-        alert(`⚠️ 無法同步：名冊中已有另一位「${name}」，不能造成名字重複。\n\n請直接改座位名字（不勾同步），或先到成員管理處理。`);
+        alert(`⚠️ 無法同步：名冊中已有另一位「${name}」，不能造成名字重複。`);
         return;
       }
-      if(!confirm(`確認要將名冊中「${_editOriginalName}」改名為「${name}」嗎？\n\n這會同步更新成員管理的資料,所有座位圖上出現這個名字的地方也會一起變更。`)){
+    }
+
+    // 2. 組確認訊息
+    const actions=[];
+    if(origMember&&name!==_editOriginalName){
+      actions.push(`• 將名冊中「${_editOriginalName}」改名為「${name}」`);
+    }
+    if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
+      actions.push(`• 將「${origMember.name}」的身分從「${RLABEL[origMember.role]}」改為「${RLABEL[newRole]}」`);
+    }
+    if(isNewGuest&&!wasGuest&&!D.members.find(m=>m.name===name)&&!(D.weekly.gps||[]).find(p=>p.guest===name)){
+      actions.push(`• 將「${name}」加入本週來賓清單（${_editGuestScore}★）`);
+    }
+    if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
+      const inGps=(D.weekly.gps||[]).find(p=>p.guest===origCell.n);
+      if(inGps) actions.push(`• 將「${origCell.n}」從本週來賓清單移除`);
+    }
+    if(!origMember&&!wasGuest&&!isNewGuest){
+      const exists=D.members.find(m=>m.name===name);
+      if(!exists){
+        actions.push(`• 在名冊中新增「${name}」為${RLABEL[newRole]||newRole}`);
+      }else if(exists.role!==newRole){
+        actions.push(`• 更新「${name}」的身分為「${RLABEL[newRole]}」`);
+      }
+    }
+
+    if(actions.length>0){
+      const msg='確認執行以下同步動作？\n\n'+actions.join('\n')+'\n\n（取消則只更新座位格，不動名冊/來賓清單）';
+      if(!confirm(msg)){
+        // 取消 → 只寫座位格，不執行同步
+        if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+        D.seating[row][col]=cell;
+        save();closeEditModal();renderChart();
         return;
       }
-      // 執行改名：1) 改成員名冊 2) 把座位圖中所有同名格子一起改
+    }
+
+    // 3. 執行同步
+
+    // 3a. 改名字（並連動所有座位圖同名格）
+    if(origMember&&name!==_editOriginalName){
       origMember.name=name;
       if(D.seating&&Array.isArray(D.seating)){
         D.seating.forEach(r=>r.forEach(c=>{
           if(c&&c.n===_editOriginalName) c.n=name;
         }));
       }
-    }else if(!origMember&&name){
-      // 空格或新名字 → 檢查是否已在名冊
-      const exists=D.members.find(m=>m.name===name);
-      if(!exists){
-        if(!confirm(`「${name}」不在成員名冊中。\n\n要新增為「一般會員」嗎?\n\n（按取消則只改座位，不動名冊）`)){
-          // 不新增，繼續正常存座位
-        }else{
-          D.members.push({
-            id:'m'+Date.now(),
-            name,
-            role:'regular',
-            chain:null,
-            pair:null
-          });
-        }
+      // 也要更新本週來賓清單（如果原名字出現在 gps.guest）
+      (D.weekly.gps||[]).forEach(p=>{
+        if(p.guest===_editOriginalName) p.guest=name;
+      });
+    }
+
+    // 3b. 改身分
+    if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
+      origMember.role=newRole;
+      // 離開導師/導生時清掉配對
+      if(!['mentor','mentee'].includes(newRole)){
+        origMember.pair=null;
+        // 也清掉其他人對他的配對
+        D.members.forEach(x=>{if(x.pair===origMember.id) x.pair=null;});
+      }
+      if(['mentor','mentee'].includes(newRole)){
+        setTimeout(()=>alert(`💡 已將「${origMember.name}」設為${RLABEL[newRole]}，請到「成員管理」設定配對對象。`),100);
       }
     }
+
+    // 3c. 加入本週來賓清單
+    if(isNewGuest&&!wasGuest&&!D.members.find(m=>m.name===name)){
+      if(!Array.isArray(D.weekly.gps)) D.weekly.gps=[];
+      const existsInGps=D.weekly.gps.find(p=>p.guest===name);
+      if(!existsInGps){
+        D.weekly.gps.push({guest:name,bid:'',score:_editGuestScore});
+      }
+    }
+
+    // 3d. 從本週來賓清單移除
+    if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
+      if(Array.isArray(D.weekly.gps)){
+        D.weekly.gps=D.weekly.gps.filter(p=>p.guest!==origCell.n);
+      }
+    }
+
+    // 3e. 空格輸入新名字 → 新增到名冊
+    if(!origMember&&!wasGuest&&!isNewGuest){
+      const exists=D.members.find(m=>m.name===name);
+      if(!exists){
+        D.members.push({
+          id:'m'+Date.now(),
+          name,
+          role:newRole,
+          chain:null,
+          pair:null
+        });
+      }else if(exists.role!==newRole){
+        exists.role=newRole;
+      }
+    }
+  }
+
+  // 來賓格子在同步時有更新 gps 分數也要反映
+  if(wantSync&&preset.role==='guest'&&name){
+    const g=(D.weekly.gps||[]).find(p=>p.guest===name);
+    if(g) g.score=_editGuestScore;
   }
 
   if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
@@ -1450,6 +1622,7 @@ function goManualEdit(){
   // 開原本的詳細編輯視窗，預填名字
   _editTarget={row,col};
   _editOriginalName='';
+  _editGuestScore=3;
   document.getElementById('em-name').value=name;
   document.getElementById('em-sync-wrap').style.display='flex';
   document.getElementById('em-sync').checked=false;
