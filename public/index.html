@@ -178,7 +178,6 @@ body.readonly .officer-cell{cursor:default!important}
     <div style="flex:1"></div>
     <button class="btn btn-slate" onclick="exportJSON()">💾 本機備份</button>
     <label  class="btn btn-slate">📂 本機還原<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
-    <button class="btn btn-slate" onclick="openCloudModal()">⚙️ 雲端設定</button>
     <button class="btn btn-blue" onclick="addSeatRow()">＋ 新增座位列</button>
   </div>
   <div class="legend">
@@ -329,8 +328,19 @@ body.readonly .officer-cell{cursor:default!important}
 <script>
 'use strict';
 
-// ── READONLY MODE DETECTION ──
-const IS_READONLY = new URLSearchParams(location.search).get('readonly') === '1';
+// ── READONLY MODE & URL-PARAM KEY ──
+const _urlParams = new URLSearchParams(location.search);
+const IS_READONLY = _urlParams.get('readonly') === '1';
+// URL 攜帶金鑰（Base64 混淆，非加密）
+// 格式：?readonly=1&k=<base64(accessKey)>&b=<base64(binId)>
+let URL_KEY = null, URL_BIN = null;
+try{
+  const kRaw = _urlParams.get('k');
+  const bRaw = _urlParams.get('b');
+  if(kRaw) URL_KEY = atob(decodeURIComponent(kRaw));
+  if(bRaw) URL_BIN = atob(decodeURIComponent(bRaw));
+}catch(e){console.warn('URL 參數解碼失敗', e);}
+const HAS_URL_CREDS = !!(URL_KEY && URL_BIN);
 
 const OFFICER_SLOTS=[
   {pos:0,title:'活動協調員'},{pos:1,title:'成長協調員'},
@@ -890,6 +900,10 @@ function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 
 // ── CLOUD (JSONBin.io) ──
 function getCloudCfg(){
+  // 優先用 URL 帶的金鑰（夥伴連結），不寫 localStorage
+  if(HAS_URL_CREDS){
+    return{key:URL_KEY,bin:URL_BIN};
+  }
   return{
     key:localStorage.getItem('jb_key')||'',
     bin:localStorage.getItem('jb_bin')||''
@@ -904,18 +918,17 @@ function setCloudStatus(msg,type){
 }
 async function cloudSave(){
   if(IS_READONLY){alert('唯讀模式無法儲存');return;}
-  const{key,bin}=getCloudCfg();
-  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
-  // 存檔前先 sanitize，避免存出壞資料
+  // 存檔前先 sanitize
   D=sanitizeData(D);
   setCloudStatus('上傳中…','loading');
   try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json','X-Master-Key':key},
+    const res=await fetch('/api/data',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify(D)
     });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
     const now=new Date();
     const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     setCloudStatus(`✅ 已儲存 ${ts}`,'ok');
@@ -926,16 +939,12 @@ async function cloudSave(){
   }
 }
 async function cloudLoad(){
-  const{key,bin}=getCloudCfg();
-  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
   setCloudStatus('載入中…','loading');
   try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
-      headers:{'X-Master-Key':key}
-    });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json=await res.json();
-    D=sanitizeData(json.record);
+    const res=await fetch('/api/data');
+    const json=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
+    D=sanitizeData(json.data);
     if(!IS_READONLY) save();
     renderChart();
     if(document.getElementById('tab-weekly').classList.contains('on')) renderWeekly();
@@ -949,19 +958,12 @@ async function cloudLoad(){
   }
 }
 async function cloudAutoLoad(){
-  const{key,bin}=getCloudCfg();
-  if(!key||!bin){
-    if(IS_READONLY) setCloudStatus('⚠️ 請先設定雲端金鑰','err');
-    return;
-  }
   setCloudStatus('自動載入…','loading');
   try{
-    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
-      headers:{'X-Master-Key':key}
-    });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const json=await res.json();
-    D=sanitizeData(json.record);
+    const res=await fetch('/api/data');
+    const json=await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
+    D=sanitizeData(json.data);
     if(!IS_READONLY) save();
     renderChart();
     setCloudStatus('✅ 已同步雲端','ok');
@@ -987,8 +989,80 @@ function saveCloudSettings(){
   localStorage.setItem('jb_bin',bin);
   closeCloudModal();
   alert('✅ 雲端設定已儲存！');
-  // 存完自動重載一次
   cloudAutoLoad();
+}
+
+// ── 產生夥伴專用連結 ──
+function genShareLink(){
+  if(HAS_URL_CREDS){
+    alert('目前已經是夥伴連結模式，無法再產生。請用編輯模式開啟再操作。');
+    return;
+  }
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){
+    alert('請先設定雲端金鑰（右上角 ⚙️），並建議使用 Access Key（只給 READ 權限）。');
+    return;
+  }
+  // 警告：如果是 Master Key，提醒改用 Access Key
+  const isLikelyMaster = key.startsWith('$2');
+  if(isLikelyMaster){
+    if(!confirm('⚠️ 警告：你目前用的可能是 Master Key！\n\n這把金鑰有完整權限，放進夥伴連結裡有被亂改資料的風險。\n\n強烈建議先到 jsonbin.io 建立一把「只開 READ 權限」的 Access Key，再重新操作。\n\n仍要繼續產生連結嗎？')) return;
+  }
+  const k=encodeURIComponent(btoa(key));
+  const b=encodeURIComponent(btoa(bin));
+  const base=location.origin+location.pathname;
+  const url=`${base}?readonly=1&k=${k}&b=${b}`;
+  // 嘗試複製到剪貼簿
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>{
+      showShareModal(url,true);
+    }).catch(()=>{
+      showShareModal(url,false);
+    });
+  }else{
+    showShareModal(url,false);
+  }
+}
+
+function showShareModal(url,copied){
+  // 移除舊的（如果有）
+  const old=document.getElementById('share-modal');
+  if(old) old.remove();
+  const modal=document.createElement('div');
+  modal.id='share-modal';
+  modal.className='modal-bg open';
+  modal.innerHTML=`
+    <div class="modal" style="width:560px">
+      <h3>🔗 夥伴專用連結</h3>
+      <p class="modal-hint">${copied?'✅ 連結已複製到剪貼簿！':'請手動複製下方連結。'}直接傳給夥伴即可，他們打開就能看到座位圖，無需任何設定。</p>
+      <label>唯讀連結</label>
+      <textarea id="share-url" readonly style="width:100%;height:72px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:none;word-break:break-all" onclick="this.select()">${url}</textarea>
+      <p class="modal-hint" style="margin-top:10px;color:#c5221f">
+        ⚠️ 重要提醒：<br>
+        1. 連結中的金鑰已做 Base64 編碼混淆，但並非加密。請務必使用<strong>只給 READ 權限的 Access Key</strong>，勿用 Master Key。<br>
+        2. 夥伴端無法編輯資料，也不會儲存金鑰到他們的瀏覽器。<br>
+        3. 若需撤銷存取，請到 jsonbin.io 直接刪除那把 Access Key。
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-blue" onclick="copyShareUrl()">📋 再次複製</button>
+        <button class="btn btn-slate" onclick="document.getElementById('share-modal').remove()">關閉</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
+  document.body.appendChild(modal);
+}
+
+function copyShareUrl(){
+  const ta=document.getElementById('share-url');
+  if(!ta) return;
+  ta.select();
+  try{
+    navigator.clipboard.writeText(ta.value);
+    alert('✅ 已複製');
+  }catch(e){
+    document.execCommand('copy');
+    alert('✅ 已複製');
+  }
 }
 document.addEventListener('click',e=>{
   if(e.target.id==='cloudModal') closeCloudModal();
