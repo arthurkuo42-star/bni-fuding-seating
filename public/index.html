@@ -187,6 +187,7 @@ body.readonly .officer-cell{cursor:default!important}
   <div class="toolbar">
     <button class="btn btn-gold"  onclick="autoGenerate()">⚡ 自動產生座位圖</button>
     <button class="btn btn-green" onclick="exportPDF()">📄 匯出 PDF</button>
+    <button class="btn btn-green" onclick="exportPNG()">🖼️ 匯出圖片</button>
     <button class="btn btn-cloud-save" onclick="cloudSave()">☁️ 存到雲端</button>
     <button class="btn btn-cloud" onclick="cloudLoad()">☁️ 從雲端載入</button>
     <span id="cloud-status"></span>
@@ -902,6 +903,20 @@ async function exportPDF(){
     const t=new Date(),ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
     pdf.save(`BNI富鼎_座位表_${ds}.pdf`);
   }catch(e){alert('PDF 匯出失敗：'+e.message);}
+}
+
+// ── PNG ──
+async function exportPNG(){
+  const el=document.getElementById('pa');
+  try{
+    const canvas=await html2canvas(el,{scale:3,useCORS:true,backgroundColor:'#fff',logging:false});
+    const url=canvas.toDataURL('image/png');
+    const a=document.createElement('a');
+    a.href=url;
+    const t=new Date(),ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+    a.download=`BNI富鼎_座位表_${ds}.png`;
+    a.click();
+  }catch(e){alert('圖片匯出失敗：'+e.message);}
 }
 
 // ── PERSISTENCE ──
