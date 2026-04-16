@@ -1002,11 +1002,11 @@ async function exportIMG(){
   try{
     // Step 1: 渲染座位圖（scale:2 已夠清晰，避免 OOM）
     const src=await html2canvas(el,{
-      scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false
+      scale:3,useCORS:true,backgroundColor:'#ffffff',logging:false,imageTimeout:0
     });
 
-    // Step 2: 建立 1920×1080 畫布（標準 PPT 尺寸）
-    const PPT_W=1920,PPT_H=1080,PADDING=40;
+    // Step 2: 建立 3840×2160 畫布（4K，PPT 16:9 高解析度）
+    const PPT_W=3840,PPT_H=2160,PADDING=80;
     const out=document.createElement('canvas');
     out.width=PPT_W;out.height=PPT_H;
     const ctx=out.getContext('2d');
