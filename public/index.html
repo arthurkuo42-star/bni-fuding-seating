@@ -15,7 +15,6 @@ header{background:linear-gradient(135deg,#0a0a18,#181830 50%,#1e1408);border-bot
 .brand-icon{font-size:22px}
 .brand-title{color:#c8a84b;font-size:18px;font-weight:700;letter-spacing:1px}
 .brand-sub{color:rgba(200,168,75,.5);font-size:11px;margin-left:2px;align-self:flex-end;padding-bottom:1px}
-.readonly-badge{background:#c8a84b;color:#1a1208;font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;margin-left:10px;letter-spacing:.5px}
 .tabs{display:flex}
 .tab{background:none;border:none;color:rgba(255,255,255,.5);padding:14px 16px;cursor:pointer;font-size:13px;font-family:inherit;border-bottom:3px solid transparent;transition:all .2s;white-space:nowrap}
 .tab:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.04)}
@@ -66,19 +65,21 @@ label.btn{cursor:pointer}
 .sg{width:100%;border-collapse:collapse;margin-top:3px}
 .sg td{border:1px solid #ddd;text-align:center;font-size:13px;height:33px;min-width:95px;padding:0 3px;vertical-align:middle}
 .rn{width:22px!important;min-width:22px!important;background:#f5f5f5;color:#999;font-size:10px;border:none!important;border-right:1px solid #e0e0e0!important}
+/* Officer row — 左右各三格對齊座位欄，中間空白 */
 .officer-row{display:flex;gap:0;margin:5px 0 4px;align-items:stretch}
 .officer-group{display:flex;gap:4px;flex:none}
-.officer-mid-gap{flex:1}
+.officer-mid-gap{flex:1}  /* 純空白撐開 */
 .officer-cell{width:95px;min-width:95px;height:48px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;cursor:grab;user-select:none;transition:filter .1s}
 .officer-cell:hover{filter:brightness(.9)}
 .off-title{font-size:9px;color:rgba(255,255,255,.7);line-height:1;margin-bottom:3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
 .off-name{font-size:13px;font-weight:700;line-height:1.2;text-align:center}
 .off-empty .off-title{color:rgba(255,255,255,.4)}
 .off-empty .off-name{color:rgba(255,255,255,.3);font-weight:400;font-style:italic;font-size:11px}
+/* Seat grid separators — 細示意條 */
 .sep-tbl{width:6px!important;min-width:6px!important;max-width:6px!important;padding:0!important;border:none!important;background:linear-gradient(90deg,#e8d0a8,#c8962a,#e8d0a8);position:relative}
 .sep-aisle{width:18px!important;min-width:18px!important;max-width:18px!important;padding:0!important;border:none!important;background:repeating-linear-gradient(90deg,#e8e8e8 0px,#e8e8e8 2px,#fff 2px,#fff 6px)}
 .seat{cursor:grab;user-select:none;transition:filter .1s}
-/* Edit Modal */
+/* ── Edit Modal ── */
 .em-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:998;align-items:center;justify-content:center}
 .em-bg.open{display:flex}
 .em-box{background:#fff;border-radius:12px;padding:22px 24px;width:320px;max-width:93vw;box-shadow:0 8px 40px rgba(0,0,0,.28)}
@@ -87,30 +88,18 @@ label.btn{cursor:pointer}
 .em-box label:first-of-type{margin-top:0}
 .em-box input[type=text]{width:100%;padding:9px 11px;border:1.5px solid #ddd;border-radius:7px;font-size:14px;font-family:inherit;transition:border-color .15s}
 .em-box input[type=text]:focus{outline:none;border-color:#2E4899;box-shadow:0 0 0 3px rgba(46,72,153,.1)}
+/* Swatches */
 .em-swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px 8px;margin-top:8px}
 .em-sw{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-.em-sw-dot{width:40px;height:40px;border-radius:8px;border:3px solid transparent;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:16px;color:transparent}
+.em-sw-dot{width:40px;height:40px;border-radius:8px;border:3px solid transparent;
+  transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.15);display:flex;
+  align-items:center;justify-content:center;font-size:16px;color:transparent}
 .em-sw:hover .em-sw-dot{transform:scale(1.1)}
 .em-sw.sel .em-sw-dot{border-color:#1a1a2e;box-shadow:0 0 0 3px rgba(26,26,46,.22);color:inherit}
 .em-sw-lbl{font-size:11px;color:#555;white-space:nowrap;font-weight:500}
 .em-sep{grid-column:1/-1;height:0;border-top:1.5px dashed #e0e0e0;margin:4px 0}
 .em-sep-lbl{grid-column:1/-1;font-size:11px;color:#aaa;margin-bottom:-2px}
 .em-actions{display:flex;justify-content:space-between;margin-top:16px;align-items:center}
-/* Pick Person Modal */
-.pp-group{margin-bottom:8px}
-.pp-group-hdr{font-size:11px;font-weight:700;color:#666;padding:6px 8px 4px;letter-spacing:.5px;display:flex;align-items:center;gap:5px}
-.pp-group-hdr .pp-count{color:#aaa;font-weight:400}
-.pp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:4px;cursor:pointer;font-size:13px;transition:all .1s}
-.pp-item:hover{background:#e8f0fe;border-color:#2E4899;transform:translateX(2px)}
-.pp-item-dot{width:12px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
-.pp-item-name{font-weight:600;color:#222}
-.pp-item-tag{font-size:11px;color:#888;margin-left:auto}
-.pp-empty{text-align:center;color:#aaa;padding:30px 10px;font-size:13px}
-/* Guest score star picker */
-.em-star{flex:1;text-align:center;cursor:pointer;padding:6px 2px;border-radius:5px;font-size:18px;user-select:none;transition:all .1s;border:1.5px solid transparent}
-.em-star:hover{background:rgba(200,168,75,.15)}
-.em-star.sel{background:#c8a84b;border-color:#8a6d00;color:#fff;transform:scale(1.05)}
-.em-star-lbl{font-size:9px;display:block;margin-top:1px}
 .seat:hover{filter:brightness(.9)}
 .seat.dragging{opacity:.3}
 .seat.drag-over{outline:3px dashed #c8a84b!important;outline-offset:-2px}
@@ -126,6 +115,7 @@ label.btn{cursor:pointer}
 .rc-deputy{background:#8B0000;color:#fff;font-style:italic}
 .rc-front{background:#2E4899;color:#fff}
 .score-badge{display:inline-block;font-size:9px;background:rgba(0,0,0,.2);border-radius:3px;padding:0 3px;margin-left:3px;vertical-align:middle;line-height:1.4}
+/* Weekly form */
 .pair-list{display:flex;flex-direction:column;gap:8px}
 .pair-row{display:flex;gap:7px;align-items:center;flex-wrap:nowrap}
 .pair-row input,.pair-row select{padding:7px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit;min-width:0}
@@ -133,19 +123,23 @@ label.btn{cursor:pointer}
 .score-sel{flex:0 0 100px!important}
 .rm-btn{background:none;border:1px solid #e0e0e0;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:15px;color:#bbb;flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center}
 .rm-btn:hover{background:#ffebee;border-color:#ef9a9a;color:#c62828}
+/* Member table */
 .mtbl{width:100%;border-collapse:collapse;font-size:13px}
 .mtbl th{background:#2E4899;color:#fff;padding:8px 10px;text-align:left;font-weight:600}
 .mtbl td{padding:6px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 .mtbl tr:hover td{background:#f5f8ff}
 .mtbl select,.mtbl input[type=text]{padding:4px 7px;border:1px solid #ddd;border-radius:4px;font-size:12px;font-family:inherit;width:100%}
+/* Officer table */
 .off-tbl{width:100%;border-collapse:collapse;font-size:13px}
 .off-tbl th{background:#1a3a6b;color:#fff;padding:9px 12px;text-align:left}
 .off-tbl td{padding:8px 12px;border-bottom:1px solid #eee;vertical-align:middle}
 .off-tbl select{padding:5px 8px;border:1px solid #ddd;border-radius:5px;font-size:13px;font-family:inherit;width:100%}
 .pos-badge{display:inline-block;background:#2E4899;color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:700;margin-right:6px}
+
 .chain-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .ctag{background:#eef2ff;border:1px solid #3f51b5;color:#283593;padding:5px 12px;border-radius:20px;font-size:13px;display:flex;align-items:center;gap:8px}
 .ctag .x{color:#c62828;cursor:pointer;font-weight:700;font-size:15px;line-height:1}
+
 .frow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .frow:last-child{margin-bottom:0}
 .frow input,.frow select{padding:7px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit}
@@ -154,13 +148,6 @@ label.btn{cursor:pointer}
 .rdot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle;border:1px solid rgba(0,0,0,.1)}
 .col-hdr{display:flex;gap:7px;font-size:12px;color:#888;padding:0 4px 5px;font-weight:600}
 .col-hdr>*{min-width:0}
-/* Readonly mode */
-body.readonly .tabs .tab:not(:first-child){display:none}
-body.readonly .toolbar .btn:not(.btn-green):not(.btn-cloud){display:none}
-body.readonly #cloud-status{display:inline-flex}
-body.readonly .seat{cursor:default!important}
-body.readonly .seat:hover{filter:none!important}
-body.readonly .officer-cell{cursor:default!important}
 @media print{header,.toolbar,.legend{display:none!important}body{background:#fff}main{padding:4px;max-width:none}.panel{display:block!important}#tab-weekly,#tab-members,#tab-officers,#tab-chains{display:none!important}.chart-wrap{box-shadow:none;padding:4px}}
 </style>
 </head>
@@ -170,7 +157,6 @@ body.readonly .officer-cell{cursor:default!important}
     <span class="brand-icon">🏆</span>
     <span class="brand-title">BNI 高雄富鼎分會</span>
     <span class="brand-sub">座位管理系統</span>
-    <span class="readonly-badge" id="ro-badge" style="display:none">👁️ 唯讀模式</span>
   </div>
   <nav class="tabs">
     <button class="tab on"  onclick="gotoTab('seating',this)">📊 座位圖</button>
@@ -182,19 +168,20 @@ body.readonly .officer-cell{cursor:default!important}
 </header>
 <main>
 
-<!-- 座位圖 -->
+<!-- ══ 座位圖 ══ -->
 <div id="tab-seating" class="panel on">
   <div class="toolbar">
     <button class="btn btn-gold"  onclick="autoGenerate()">⚡ 自動產生座位圖</button>
     <button class="btn btn-green" onclick="exportPDF()">📄 匯出 PDF</button>
-    <button class="btn btn-green" onclick="exportPNG()">🖼️ 匯出圖片</button>
+    <button class="btn btn-green" onclick="exportIMG()">🖼️ 匯出圖片</button>
     <button class="btn btn-cloud-save" onclick="cloudSave()">☁️ 存到雲端</button>
     <button class="btn btn-cloud" onclick="cloudLoad()">☁️ 從雲端載入</button>
     <span id="cloud-status"></span>
     <div style="flex:1"></div>
     <button class="btn btn-slate" onclick="exportJSON()">💾 本機備份</button>
     <label  class="btn btn-slate">📂 本機還原<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
-    <button class="btn btn-blue" onclick="addSeatRow()">＋ 新增座位列</button>
+    <button class="btn btn-slate" onclick="openCloudModal()">⚙️ 雲端設定</button>
+    <button class="btn btn-blue" onclick="addSeatRow()" title="在座位表底部新增一排空白格">＋ 新增座位列</button>
   </div>
   <div class="legend">
     <div class="leg"><div class="leg-dot" style="background:#f9e04b"></div>來賓</div>
@@ -209,7 +196,7 @@ body.readonly .officer-cell{cursor:default!important}
   <div class="chart-wrap"><div id="pa"></div></div>
 </div>
 
-<!-- 本週設定 -->
+<!-- ══ 本週設定 ══ -->
 <div id="tab-weekly" class="panel">
   <div class="notice">💡 每週填入來賓配對（可設分數）與代理人資訊後，按「⚡ 自動產生」即可更新座位圖。</div>
   <div class="card">
@@ -240,7 +227,7 @@ body.readonly .officer-cell{cursor:default!important}
   <button class="btn btn-gold" onclick="autoGenerate();gotoTab('seating',document.querySelectorAll('.tab')[0])">⚡ 儲存並產生座位圖</button>
 </div>
 
-<!-- 幹部職位 -->
+<!-- ══ 幹部職位 ══ -->
 <div id="tab-officers" class="panel">
   <div class="notice">💡 第一排由左至右共 6 個固定席位，請為每個職位指定對應會員。</div>
   <div class="card">
@@ -255,7 +242,7 @@ body.readonly .officer-cell{cursor:default!important}
   </div>
 </div>
 
-<!-- 成員管理 -->
+<!-- ══ 成員管理 ══ -->
 <div id="tab-members" class="panel">
   <div class="card">
     <div class="card-head">➕ 新增成員</div>
@@ -286,7 +273,7 @@ body.readonly .officer-cell{cursor:default!important}
   </div>
 </div>
 
-<!-- 產業服務鏈 -->
+<!-- ══ 產業服務鏈 ══ -->
 <div id="tab-chains" class="panel">
   <div class="card">
     <div class="card-head">🔗 產業服務鏈管理</div>
@@ -300,27 +287,17 @@ body.readonly .officer-cell{cursor:default!important}
 </div>
 
 
-<!-- Edit Seat Modal -->
+<!-- ── Edit Seat Modal ── -->
 <div class="em-bg" id="em-modal" onclick="if(event.target===this)closeEditModal()">
   <div class="em-box">
     <div class="em-head">✏️ 編輯座位</div>
     <input type="text" id="em-name" placeholder="輸入姓名…"
       onkeydown="if(event.key==='Enter')saveEditModal()"
-      oninput="updateSyncHint()"
       style="width:100%;padding:10px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:15px;font-family:inherit;margin-bottom:14px;transition:border-color .15s"
       onfocus="this.style.borderColor='#2E4899';this.style.boxShadow='0 0 0 3px rgba(46,72,153,.1)'"
       onblur="this.style.borderColor='#ddd';this.style.boxShadow='none'">
     <div style="font-size:12px;color:#888;font-weight:600;letter-spacing:.3px;margin-bottom:2px">顏色 / 身分</div>
     <div class="em-swatches" id="em-swatches"></div>
-    <div id="em-guest-score" style="display:none;margin-top:12px;padding:10px 12px;background:#fffbe6;border:1px solid #f0d974;border-radius:7px">
-      <div style="font-size:11px;color:#8a6d00;font-weight:700;margin-bottom:6px;letter-spacing:.3px">🟡 來賓優先分數</div>
-      <div id="em-score-stars" style="display:flex;gap:4px;justify-content:space-between"></div>
-    </div>
-    <label id="em-sync-wrap" style="display:flex;align-items:flex-start;gap:8px;margin-top:14px;padding:10px 12px;background:#f5f8ff;border:1px solid #c8d4ec;border-radius:7px;cursor:pointer;font-size:13px;color:#1a3a6b;line-height:1.4">
-      <input type="checkbox" id="em-sync" onchange="updateSyncHint()" style="width:16px;height:16px;cursor:pointer;accent-color:#2E4899;flex-shrink:0;margin-top:1px">
-      <span>🔄 同步更新成員管理 / 本週設定<br><span style="font-size:11px;color:#6b7c9e;font-weight:400">包含名字、身分、來賓清單變動</span></span>
-    </label>
-    <div id="em-sync-hint" style="font-size:11px;color:#888;margin-top:6px;line-height:1.5;display:none"></div>
     <div class="em-actions">
       <button class="btn btn-red btn-sm" onclick="clearEditCell()">🗑 清空</button>
       <div style="display:flex;gap:7px">
@@ -331,41 +308,18 @@ body.readonly .officer-cell{cursor:default!important}
   </div>
 </div>
 
-<!-- Pick Person Modal (for empty seats) -->
-<div class="em-bg" id="pp-modal" onclick="if(event.target===this)closePickModal()">
-  <div class="em-box" style="width:380px;max-height:85vh;display:flex;flex-direction:column">
-    <div class="em-head">📍 選擇要入座的人</div>
-    <input type="text" id="pp-search" placeholder="🔍 輸入姓名搜尋…" oninput="renderPickList()"
-      style="width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:7px;font-size:14px;font-family:inherit;margin-bottom:10px"
-      onfocus="this.style.borderColor='#2E4899'"
-      onblur="this.style.borderColor='#ddd'">
-    <div id="pp-list" style="flex:1;overflow-y:auto;border:1px solid #eee;border-radius:7px;padding:6px;background:#fafafa;min-height:200px;max-height:50vh"></div>
-    <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #ddd">
-      <div style="font-size:11px;color:#888;margin-bottom:6px;font-weight:600">✏️ 或手動輸入名字（切換到詳細編輯）</div>
-      <div style="display:flex;gap:6px">
-        <input type="text" id="pp-manual" placeholder="例如：臨時外賓" style="flex:1;padding:8px 11px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')goManualEdit()">
-        <button class="btn btn-blue btn-sm" onclick="goManualEdit()">詳細編輯 →</button>
-      </div>
-    </div>
-    <div class="em-actions" style="margin-top:12px">
-      <div></div>
-      <button class="btn btn-slate btn-sm" onclick="closePickModal()">取消</button>
-    </div>
-  </div>
-</div>
-
-<!-- Cloud Settings Modal -->
+<!-- ── Cloud Settings Modal ── -->
 <div class="modal-bg" id="cloudModal">
   <div class="modal">
     <h3>☁️ 雲端備份設定（JSONBin.io）</h3>
     <p class="modal-hint">
-      請先到 <a href="https://jsonbin.io" target="_blank" style="color:#1a73e8">jsonbin.io</a> 免費註冊，取得 <strong>Master Key</strong>（或權限受限的 Access Key），並建立一個 Bin 後取得 <strong>Bin ID</strong>。
+      請先到 <a href="https://jsonbin.io" target="_blank" style="color:#1a73e8">jsonbin.io</a> 免費註冊，取得 <strong>Master Key</strong>，並建立一個 Bin 後取得 <strong>Bin ID</strong>。
     </p>
-    <label>X-Master-Key 或 X-Access-Key</label>
+    <label>Master Key（X-Master-Key）</label>
     <input type="password" id="jb-key" placeholder="$2b$10$...">
     <label>Bin ID</label>
     <input type="text" id="jb-bin" placeholder="64a3f2...">
-    <p class="modal-hint" style="margin-top:8px">⚠️ 這組設定只存在你的瀏覽器裡，不會上傳到任何地方。<br>📌 給夥伴唯讀模式使用時，建議用 Access Key 並只開 READ 權限。</p>
+    <p class="modal-hint" style="margin-top:8px">⚠️ 這組設定只存在你的瀏覽器裡，不會上傳到任何地方。</p>
     <div class="modal-actions">
       <button class="btn btn-slate" onclick="closeCloudModal()">取消</button>
       <button class="btn btn-cloud" onclick="saveCloudSettings()">✅ 儲存設定</button>
@@ -376,20 +330,6 @@ body.readonly .officer-cell{cursor:default!important}
 </main>
 <script>
 'use strict';
-
-// ── READONLY MODE & URL-PARAM KEY ──
-const _urlParams = new URLSearchParams(location.search);
-const IS_READONLY = _urlParams.get('readonly') === '1';
-// URL 攜帶金鑰（Base64 混淆，非加密）
-// 格式：?readonly=1&k=<base64(accessKey)>&b=<base64(binId)>
-let URL_KEY = null, URL_BIN = null;
-try{
-  const kRaw = _urlParams.get('k');
-  const bRaw = _urlParams.get('b');
-  if(kRaw) URL_KEY = atob(decodeURIComponent(kRaw));
-  if(bRaw) URL_BIN = atob(decodeURIComponent(bRaw));
-}catch(e){console.warn('URL 參數解碼失敗', e);}
-const HAS_URL_CREDS = !!(URL_KEY && URL_BIN);
 
 const OFFICER_SLOTS=[
   {pos:0,title:'活動協調員'},{pos:1,title:'成長協調員'},
@@ -403,54 +343,125 @@ const SCORE_LABEL={1:'★ 1',2:'★★ 2',3:'★★★ 3（預設）',4:'★★�
 
 let D={members:[],chains:[],weekly:{chairman:'',comp1:'',comp2:'',gps:[],abs:[]},officerSlots:Array(6).fill(null),seating:null};
 
-// ── SANITIZE (防止雲端/本機資料缺欄位導致崩潰) ──
-function sanitizeData(raw){
-  const d=raw&&typeof raw==='object'?raw:{};
-  if(!Array.isArray(d.members)) d.members=[];
-  if(!Array.isArray(d.chains)) d.chains=[];
-  if(!d.weekly||typeof d.weekly!=='object') d.weekly={};
-  if(typeof d.weekly.chairman!=='string') d.weekly.chairman='';
-  if(typeof d.weekly.comp1!=='string') d.weekly.comp1='';
-  if(typeof d.weekly.comp2!=='string') d.weekly.comp2='';
-  if(!Array.isArray(d.weekly.gps)) d.weekly.gps=[];
-  if(!Array.isArray(d.weekly.abs)) d.weekly.abs=[];
-  if(!Array.isArray(d.officerSlots)||d.officerSlots.length!==6) d.officerSlots=Array(6).fill(null);
-  if(!d.seating||!Array.isArray(d.seating)) d.seating=null;
-  d.weekly.gps.forEach(p=>{if(!p.score)p.score=3;});
-  d.chains.forEach(c=>{if(!('repId' in c))c.repId=null;});
-  // Migration: old abs 可能是 [{name,dep}] → 現在是 ID 陣列
-  if(d.weekly.abs.length&&typeof d.weekly.abs[0]==='object'){
-    d.weekly.abs=d.weekly.abs.map(a=>{
-      const m=d.members.find(x=>x.name===a.name);return m?m.id:'';
-    }).filter(Boolean);
-  }
-  return d;
-}
-
 function seed(){
   const M=[
-    {id:'m01',name:'蔡宜倩',role:'chairman',chain:null,pair:null},
-    {id:'m02',name:'賴玉軒',role:'computer',chain:null,pair:null},
-    {id:'m03',name:'黃信華',role:'computer',chain:null,pair:null},
-    {id:'m04',name:'景國強',role:'regular',chain:null,pair:null},
-    {id:'m05',name:'郭泓志',role:'regular',chain:null,pair:null},
-    {id:'m06',name:'黃筑憶',role:'regular',chain:null,pair:null},
-    {id:'m07',name:'鍾易峻',role:'regular',chain:null,pair:null},
-    {id:'m37',name:'高毓靜',role:'regular',chain:null,pair:null},
-    {id:'m67',name:'陳鳳伶',role:'regular',chain:null,pair:null},
+    {id:'m01',name:'蔡宜倩',  role:'chairman', chain:null,pair:null},
+    {id:'m02',name:'賴玉軒',  role:'computer',  chain:null,pair:null},
+    {id:'m03',name:'黃信華',  role:'computer',  chain:null,pair:null},
+    {id:'m04',name:'景國強',  role:'regular',   chain:null,pair:null},
+    {id:'m05',name:'郭泓志',  role:'regular',   chain:null,pair:null},
+    {id:'m06',name:'黃筑憶',  role:'regular',   chain:null,pair:null},
+    {id:'m07',name:'鍾易峻',  role:'regular',   chain:null,pair:null},
+    {id:'m08',name:'蘇柏宇',  role:'regular',   chain:null,pair:null},
+    {id:'m09',name:'鄭勤',    role:'regular',   chain:null,pair:null},
+    {id:'m10',name:'曾坤生',  role:'binding',   chain:null,pair:null},
+    {id:'m11',name:'林鈺婷',  role:'binding',   chain:null,pair:null},
+    {id:'m12',name:'劉明傳',  role:'binding',   chain:null,pair:null},
+    {id:'m13',name:'黃坤凭',  role:'binding',   chain:null,pair:null},
+    {id:'m14',name:'林紘琪',  role:'binding',   chain:null,pair:null},
+    {id:'m15',name:'蘇聖泓',  role:'binding',   chain:null,pair:null},
+    {id:'m16',name:'林志勳',  role:'binding',   chain:null,pair:null},
+    {id:'m17',name:'周亞非',  role:'binding',   chain:null,pair:null},
+    {id:'m18',name:'劉士豪',  role:'mentor',    chain:null,pair:'m46'},
+    {id:'m19',name:'劉人豪',  role:'mentee',    chain:null,pair:'m21'},
+    {id:'m20',name:'葉梅雅',  role:'mentee',    chain:null,pair:'m22'},
+    {id:'m21',name:'廖維昇',  role:'mentor',    chain:null,pair:'m19'},
+    {id:'m22',name:'張宏煌',  role:'mentor',    chain:null,pair:'m20'},
+    {id:'m23',name:'鄭裕霖',  role:'mentee',    chain:null,pair:'m24'},
+    {id:'m24',name:'梁喬閔',  role:'mentor',    chain:null,pair:'m47'},
+    {id:'m25',name:'陳玥羹',  role:'reception', chain:null,pair:null},
+    {id:'m26',name:'榮靖昀',  role:'regular',   chain:null,pair:null},
+    {id:'m27',name:'葉力維',  role:'regular',   chain:null,pair:null},
+    {id:'m28',name:'謝獻璋',  role:'regular',   chain:null,pair:null},
+    {id:'m29',name:'曾佩珊',  role:'regular',   chain:null,pair:null},
+    {id:'m30',name:'田家全',  role:'regular',   chain:null,pair:null},
+    {id:'m31',name:'蔡廷源',  role:'regular',   chain:null,pair:null},
+    {id:'m32',name:'徐碧紫',  role:'regular',   chain:null,pair:null},
+    {id:'m33',name:'陳哲銘',  role:'regular',   chain:null,pair:null},
+    {id:'m34',name:'歐陽仁傑',role:'regular',   chain:null,pair:null},
+    {id:'m35',name:'施盈好',  role:'regular',   chain:null,pair:null},
+    {id:'m36',name:'馬博泰',  role:'regular',   chain:null,pair:null},
+    {id:'m37',name:'高毓靜',  role:'regular',   chain:null,pair:null},
+    {id:'m38',name:'曾梓淞',  role:'regular',   chain:null,pair:null},
+    {id:'m39',name:'廖文平',  role:'regular',   chain:null,pair:null},
+    {id:'m40',name:'羅裕傑',  role:'regular',   chain:null,pair:null},
+    {id:'m41',name:'郭峻璋',  role:'regular',   chain:null,pair:null},
+    {id:'m42',name:'田揚駿',  role:'regular',   chain:null,pair:null},
+    {id:'m43',name:'劉祐愷',  role:'regular',   chain:null,pair:null},
+    {id:'m44',name:'馬柞為',  role:'regular',   chain:null,pair:null},
+    {id:'m45',name:'王吟亦',  role:'regular',   chain:null,pair:null},
+    {id:'m46',name:'謝睿宸',  role:'mentee',    chain:null,pair:'m18'},
+    {id:'m47',name:'林佳慧',  role:'mentee',    chain:null,pair:'m24'},
+    {id:'m48',name:'吳沛倫',  role:'regular',   chain:null,pair:null},
+    {id:'m49',name:'陳昱麟',  role:'regular',   chain:null,pair:null},
+    {id:'m50',name:'洪翠瑩',  role:'regular',   chain:null,pair:null},
+    {id:'m51',name:'許毅帆',  role:'regular',   chain:null,pair:null},
+    {id:'m52',name:'蔡孟儒',  role:'regular',   chain:null,pair:null},
+    {id:'m53',name:'王婕恩',  role:'regular',   chain:null,pair:null},
+    {id:'m54',name:'王瓊聆',  role:'regular',   chain:null,pair:null},
+    {id:'m55',name:'李鎮緯',  role:'regular',   chain:null,pair:null},
+    {id:'m56',name:'張志忠',  role:'regular',   chain:null,pair:null},
+    {id:'m57',name:'吳冠緯',  role:'regular',   chain:null,pair:null},
+    {id:'m58',name:'陳璟寬',  role:'regular',   chain:null,pair:null},
+    {id:'m59',name:'李治學',  role:'regular',   chain:null,pair:null},
+    {id:'m60',name:'洪淑萍',  role:'regular',   chain:null,pair:null},
+    {id:'m61',name:'陳章翰',  role:'regular',   chain:null,pair:null},
+    {id:'m62',name:'黃秀如',  role:'regular',   chain:null,pair:null},
+    {id:'m63',name:'沈育銘',  role:'regular',   chain:null,pair:null},
+    {id:'m64',name:'吳章漢',  role:'regular',   chain:null,pair:null},
+    {id:'m65',name:'吳煌欽',  role:'regular',   chain:null,pair:null},
+    {id:'m66',name:'蔡冠亨',  role:'regular',   chain:null,pair:null},
+    {id:'m67',name:'陳鳳伶',  role:'regular',   chain:null,pair:null},
+    {id:'m68',name:'葉冠廷',  role:'regular',   chain:null,pair:null},
+    {id:'m69',name:'洪國益',  role:'regular',   chain:null,pair:null},
+    {id:'m70',name:'吳品賢',  role:'regular',   chain:null,pair:null},
+    {id:'m71',name:'傅翰哲',  role:'regular',   chain:null,pair:null},
+    {id:'m72',name:'李莉加',  role:'reception', chain:null,pair:null},
+    {id:'m73',name:'黃婉怡',  role:'regular',   chain:null,pair:null},
+    {id:'m74',name:'何彩菲',  role:'regular',   chain:null,pair:null},
+    {id:'m75',name:'樊靖昀',  role:'regular',   chain:null,pair:null},
   ];
+
+  // 4/10 幹部席位：陳鳳伶｜郭泓志｜黃筑憶｜鍾易峻｜景國強｜高毓靜
   const officerSlots=['m67','m05','m06','m07','m04','m37'];
-  const weekly={chairman:'m01',comp1:'m02',comp2:'m03',gps:[],abs:[]};
-  return sanitizeData({members:M,chains:[],weekly,officerSlots,seating:null});
+
+  const weekly={
+    chairman:'m01',comp1:'m02',comp2:'m03',
+    gps:[
+      {guest:'蘇筱君',bid:'m66',score:3},
+      {guest:'鄭聖樺',bid:'m60',score:3},
+      {guest:'黃駿棋',bid:'m12',score:3},
+      {guest:'羅之妤',bid:'m21',score:3},
+      {guest:'王秀莉',bid:'m09',score:3},
+      {guest:'曹俐婷',bid:'m11',score:3},
+    ],
+    abs:['m64','m23']
+  };
+
+  // 4/10 座位圖（對應圖片）
+  const seating=[
+    [{n:'蔡冠亨',r:'binding'},{n:'洪淑萍',r:'binding'},{n:'劉明傳',r:'binding'},{n:'廖維昇',r:'binding'},{n:'鄭勤',r:'binding'},{n:'林鈺婷',r:'binding'}],
+    [{n:'蘇筱君',r:'guest',s:3},{n:'鄭聖樺',r:'guest',s:3},{n:'黃駿棋',r:'guest',s:3},{n:'羅之妤',r:'guest',s:3},{n:'王秀莉',r:'guest',s:3},{n:'曹俐婷',r:'guest',s:3}],
+    [{n:'謝睿宸',r:'mentee'},{n:'葉冠廷',r:'regular'},{n:'洪國益',r:'regular'},{n:'吳品賢',r:'regular'},{n:'傅翰哲',r:'regular'},{n:'蘇柏宇',r:'regular'}],
+    [{n:'劉士豪',r:'mentor'},{n:'陳哲銘',r:'regular'},{n:'曾坤生',r:'regular'},{n:'謝獻璋',r:'regular'},{n:'葉力維',r:'regular'},{n:'施盈好',r:'regular'}],
+    [{n:'李莉加',r:'reception'},{n:'陳玥羹',r:'reception'},{n:'田揚駿',r:'regular'},{n:'樊靖昀',r:'regular'},{n:'曾梓淞',r:'regular'},{n:'林佳慧',r:'mentee'}],
+    [{n:'馬博泰',r:'regular'},{n:'歐陽仁傑',r:'regular'},{n:'李治學',r:'regular'},{n:'馬柞為',r:'regular'},{n:'梁喬閔',r:'mentor'},{n:'黃婉怡',r:'regular'}],
+    [{n:'洪翠瑩',r:'regular'},{n:'吳冠緯',r:'regular'},{n:'廖文平',r:'regular'},{n:'陳章翰',r:'regular'},{n:'何彩菲',r:'regular'},{n:'王瓊聆',r:'regular'}],
+    [{n:'李鎮緯',r:'regular'},{n:'羅裕傑',r:'regular'},{n:'吳沛倫',r:'regular'},{n:'劉祐愷',r:'regular'},{n:'王吟亦',r:'regular'},{n:'許毅帆',r:'regular'}],
+    [{n:'徐碧紫',r:'regular'},{n:'王婕恩',r:'regular'},{n:'吳煌欽',r:'regular'},{n:'張宏煌',r:'regular'},{n:'郭峻璋',r:'regular'},{n:'陳昱麟',r:'regular'}],
+    [{n:'張志忠',r:'regular'},{n:'黃秀如',r:'regular'},{n:'陳璟寬',r:'regular'},{n:'沈育銘',r:'regular'},{n:'蔡廷源',r:'regular'},{n:'蔡孟儒',r:'regular'}],
+    [{n:'吳章漢(代)',r:'deputy'},{n:'鄭裕霖(代)',r:'deputy'},{n:'',r:'empty'},{n:'',r:'empty'},{n:'',r:'empty'},{n:'',r:'empty'}],
+  ];
+  return{members:M,chains:[],weekly,officerSlots,seating};
 }
 
 // ── RENDER CHART ──
 function renderChart(){
-  D=sanitizeData(D); // 每次 render 前都確保資料完整
   const{members:M,weekly:W,officerSlots:OS,seating:S}=D;
   const byId=id=>M.find(m=>m.id===id)||{name:'',role:''};
   const chair=byId(W.chairman),c1=byId(W.comp1),c2=byId(W.comp2);
 
+  // 頂部列
   let h=`<div class="top-row">
     <div class="stage-box">舞　台</div>
     <div class="chair-box"><div class="box-lbl">主席</div><div class="box-name">${xe(chair.name||'—')}</div></div>
@@ -458,14 +469,12 @@ function renderChart(){
     <div class="comp-box"><div class="box-lbl">電腦手</div><div class="box-name">${xe(c1.name||'—')}</div><div class="box-name">${xe(c2.name||'—')}</div></div>
   </div>`;
 
-  const dragAttr=IS_READONLY?'':' draggable="true"';
-  const dragEvents=IS_READONLY?'':' ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)"';
-  const officerClick=IS_READONLY?'':' onclick="gotoTab(\'officers\')"';
-
-  h+=`<div class="officer-row"><div class="officer-group">`;
+  // 幹部第一排：左三 + 走道 + 右三
+  h+=`<div class="officer-row">`;
+  h+=`<div class="officer-group">`;
   for(let pos=0;pos<3;pos++){
     const mid=OS[pos],m=mid?byId(mid):null,empty=!m||!m.name;
-    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}"${dragAttr} data-row="-1" data-col="${pos}"${dragEvents}${officerClick}>
+    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}" draggable="true" data-row="-1" data-col="${pos}" ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)" onclick="gotoTab('officers')" title="點此前往幹部職位設定">
       <div class="off-title">${xe(OFFICER_SLOTS[pos].title)}</div>
       <div class="off-name">${xe(m&&m.name?m.name:'（未指派）')}</div>
     </div>`;
@@ -473,22 +482,36 @@ function renderChart(){
   h+=`</div><div class="officer-mid-gap"></div><div class="officer-group">`;
   for(let pos=3;pos<6;pos++){
     const mid=OS[pos],m=mid?byId(mid):null,empty=!m||!m.name;
-    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}"${dragAttr} data-row="-1" data-col="${pos}"${dragEvents}${officerClick}>
+    h+=`<div class="seat rc-front officer-cell${empty?' off-empty':''}" draggable="true" data-row="-1" data-col="${pos}" ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)" onclick="gotoTab('officers')" title="點此前往幹部職位設定">
       <div class="off-title">${xe(OFFICER_SLOTS[pos].title)}</div>
       <div class="off-name">${xe(m&&m.name?m.name:'（未指派）')}</div>
     </div>`;
   }
   h+=`</div></div>`;
 
+  // 主座位表：欄間插入長桌/走道分隔
+  // 規則：col 0-1 長桌 | col 1-2 走道 | col 2-3 長桌 | col 3-4 走道 | col 4-5 長桌
   const sepCell=ci=>{
-    if(ci===0||ci===2||ci===4) return `<td class="sep-tbl"></td>`;
-    if(ci===1||ci===3)         return `<td class="sep-aisle"></td>`;
+    if(ci===0||ci===2||ci===4) return `<td class="sep-tbl" title="長桌"></td>`;
+    if(ci===1||ci===3)         return `<td class="sep-aisle" title="走道"></td>`;
     return '';
   };
 
   h+=`<table class="sg" id="sg">
   <colgroup>
-    <col style="width:22px"><col><col style="width:6px"><col><col style="width:18px"><col><col style="width:6px"><col><col style="width:18px"><col><col style="width:6px"><col><col style="width:22px">
+    <col style="width:22px"><!-- rn -->
+    <col><!-- col 0 -->
+    <col style="width:6px"><!-- 長桌 -->
+    <col><!-- col 1 -->
+    <col style="width:18px"><!-- 走道 -->
+    <col><!-- col 2 -->
+    <col style="width:6px"><!-- 長桌 -->
+    <col><!-- col 3 -->
+    <col style="width:18px"><!-- 走道 -->
+    <col><!-- col 4 -->
+    <col style="width:6px"><!-- 長桌 -->
+    <col><!-- col 5 -->
+    <col style="width:22px"><!-- rn -->
   </colgroup>`;
   if(S&&S.length){
     S.forEach((row,ri)=>{
@@ -498,15 +521,13 @@ function renderChart(){
         const css=RCSS[r]||'rc-regular',empty=(r==='empty');
         const stag=(r==='guest'&&s&&s!==3)?`<span class="score-badge">${s}★</span>`:'';
         const customStyle=cell&&cell.color?` style="background:${cell.color}!important;color:${textColor(cell.color)}"`:'' ;
-        const cellDrag=(!empty&&!IS_READONLY)?' draggable="true"':'';
-        const cellEvents=IS_READONLY?'':` ondragstart="ds(event)" ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)" onclick="editCell(${ri},${ci})"`;
-        h+=`<td class="seat ${css}"${customStyle}${cellDrag} data-row="${ri}" data-col="${ci}"${cellEvents}>${xe(n)}${stag}</td>`;
+        h+=`<td class="seat ${css}"${customStyle}${!empty?' draggable="true"':''} data-row="${ri}" data-col="${ci}"${!empty?' ondragstart="ds(event)"':''} ondragover="dov(event)" ondrop="dp(event)" ondragleave="dl(event)" onclick="editCell(${ri},${ci})">${xe(n)}${stag}</td>`;
         if(ci<5) h+=sepCell(ci);
       });
       h+=`<td class="rn">${ri+1}</td></tr>`;
     });
   }else{
-    h+=`<tr><td colspan="13" style="text-align:center;padding:40px;color:#aaa;font-size:14px">${IS_READONLY?'尚無座位資料。':'請到「本週設定」填入資料，再按「⚡ 自動產生座位圖」。'}</td></tr>`;
+    h+=`<tr><td colspan="13" style="text-align:center;padding:40px;color:#aaa;font-size:14px">請到「本週設定」填入資料，再按「⚡ 自動產生座位圖」。</td></tr>`;
   }
   h+=`</table>`;
   document.getElementById('pa').innerHTML=h;
@@ -533,30 +554,39 @@ function autoGenerate(){
   const newRow=()=>Array(COLS).fill(null).map(E);
   const mark=n=>{if(n)placed.add(n)};
 
+  // 全程追蹤各欄已用格數，供均勻分配
   const colCount=Array(COLS).fill(0);
+
+  // 找最短欄（同長度隨機選，避免偏左）
   const shortestCol=()=>{
     const min=Math.min(...colCount);
     const ties=[];
     for(let i=0;i<COLS;i++){if(colCount[i]===min)ties.push(i);}
     return ties[Math.floor(Math.random()*ties.length)];
   };
+
+  // 找最短的 n 個欄（隨機排序同長度）
   const shortestNCols=(n)=>{
     const order=[...Array(COLS).keys()].sort((a,b)=>colCount[a]-colCount[b]||Math.random()-.5);
     return order.slice(0,n);
   };
 
+  // 固定席位不佔 colCount
   OS.forEach(id=>{const m=byId(id);if(m)mark(m.name);});
   [W.chairman,W.comp1,W.comp2].forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+  // 有代理人的請假成員：只顯示代理人座位，本人不排座
   (W.abs||[]).forEach(id=>{const m=byId(id);if(m)mark(m.name);});
 
-  // STEP 1: 來賓配對
+  // ── STEP 1: 來賓配對（高分優先中間欄）──
   const scoreGroups={};
   (W.gps||[]).forEach(p=>{const s=p.score||3;(scoreGroups[s]=scoreGroups[s]||[]).push(p);});
   const gps=Object.keys(scoreGroups).sort((a,b)=>b-a).flatMap(s=>shuffle(scoreGroups[s]));
+
   const makeCO=()=>{
     const mid=[2,3],outer=shuffle([1,4]),edge=shuffle([0,5]);
     return[...mid,...outer,...edge];
   };
+
   if(gps.length>0){
     let gi=0,first=true;
     while(gi<gps.length){
@@ -569,7 +599,7 @@ function autoGenerate(){
         bRow[col]={n:bn,r:'binding'};
         gRow[col]={n:p.guest,r:'guest',s:p.score||3};
         mark(bn);mark(p.guest);
-        colCount[col]+=2;
+        colCount[col]+=2; // binding + guest 各佔一格
       }
       if(first){grid.push(bRow);grid.push(gRow);first=false;}
       else{grid.push(gRow);grid.push(bRow);}
@@ -577,7 +607,7 @@ function autoGenerate(){
     }
   }
 
-  // STEP 2: 導生 × 導師
+  // ── STEP 2: 導生 × 導師（以導師分組，欄位均勻選取）──
   const menteeList=M.filter(m=>m.role==='mentee'&&!placed.has(m.name));
   const mentorGroupMap={};
   for(const me of menteeList){
@@ -589,6 +619,7 @@ function autoGenerate(){
   }
   const lonelyMentees=menteeList.filter(me=>!me.pair||!byId(me.pair));
   const mentorGroups=shuffle(Object.values(mentorGroupMap));
+
   for(const grp of mentorGroups){
     const{mentor,mentees}=grp;
     if(placed.has(mentor.name)) continue;
@@ -597,6 +628,7 @@ function autoGenerate(){
     while(bi<mentees.length){
       const bs=Math.min(COLS,mentees.length-bi);
       const meR=newRow(),moR=newRow();
+      // 選最短的 bs 個欄，隨機排列（均勻分散）
       const cols=shuffle(shortestNCols(bs));
       for(let k=0;k<bs;k++){
         const col=cols[k],me=mentees[bi+k];
@@ -626,10 +658,12 @@ function autoGenerate(){
     }
   }
 
-  // STEP 3: 其他會員
+  // ── STEP 3: 其他會員（均勻分配各欄，同產業鏈相鄰；接待組排在各欄後段）──
   const skip=['chairman','computer'];
   const toPlace=M.filter(m=>!skip.includes(m.role)&&!placed.has(m.name)&&m.role!=='reception');
   const receptionMembers=M.filter(m=>m.role==='reception'&&!placed.has(m.name));
+
+  // 一般會員（含其他角色）先均勻填入
   const chainMap={};
   const noChain=[];
   toPlace.forEach(m=>{
@@ -640,17 +674,25 @@ function autoGenerate(){
   const chainGroups=shuffle(Object.values(chainMap));
   shuffle(noChain);
   const sorted=[...chainGroups.flat(),...noChain];
+
   const colCells=Array.from({length:COLS},()=>[]);
   let prevChain=null,curCol=null;
   for(const m of sorted){
     if(m.chain&&m.chain===prevChain&&curCol!==null){
-      if(colCount[curCol]<=Math.min(...colCount)+1){}
-      else{curCol=shortestCol();}
-    }else{curCol=shortestCol();}
+      if(colCount[curCol]<=Math.min(...colCount)+1){
+        // 繼續同欄保持同鏈相鄰
+      } else {
+        curCol=shortestCol();
+      }
+    } else {
+      curCol=shortestCol();
+    }
     colCells[curCol].push({n:m.name,r:m.role});
     colCount[curCol]++;
     prevChain=m.chain||null;
   }
+
+  // 接待組：用貪心均勻分配到各欄後段（和一般會員同邏輯，但排在後面）
   shuffle(receptionMembers);
   for(const m of receptionMembers){
     const c=shortestCol();
@@ -658,6 +700,7 @@ function autoGenerate(){
     colCount[c]++;
     mark(m.name);
   }
+
   const maxNew=Math.max(0,...colCells.map(c=>c.length));
   for(let ri=0;ri<maxNew;ri++){
     const row=newRow();
@@ -667,7 +710,7 @@ function autoGenerate(){
     grid.push(row);
   }
 
-  // STEP 4: 代理人
+  // ── STEP 4: 代理人（固定末排）──
   const absArr=W.abs||[];
   let deputyRow=null;
   if(absArr.length>0){
@@ -678,7 +721,7 @@ function autoGenerate(){
     deputyRow=dRow;
   }
 
-  // STEP 5: 逐欄壓縮
+  // ── STEP 5: 逐欄壓縮（空格往下推）──
   const ROWS=grid.length;
   for(let ci=0;ci<COLS;ci++){
     const cells=[];
@@ -692,28 +735,18 @@ function autoGenerate(){
 }
 
 
-// ── DRAG & DROP (修正版：加 dragend 確保旗標一定會清) ──
+// ── DRAG & DROP ──
 let _src=null,_dragged=false;
-function ds(e){
-  if(IS_READONLY){e.preventDefault();return;}
-  _src=e.currentTarget;
-  _src.classList.add('dragging');
-  e.dataTransfer.effectAllowed='move';
-  _dragged=true;
-  _src.addEventListener('dragend',()=>{
-    cleanup();
-    setTimeout(()=>_dragged=false,100);
-  },{once:true});
-}
-function dov(e){if(IS_READONLY)return;e.preventDefault();e.dataTransfer.dropEffect='move';if(e.currentTarget&&e.currentTarget!==_src)e.currentTarget.classList.add('drag-over');}
+function ds(e){_src=e.currentTarget;_src.classList.add('dragging');e.dataTransfer.effectAllowed='move';_dragged=true;}
+function dov(e){e.preventDefault();e.dataTransfer.dropEffect='move';if(e.currentTarget&&e.currentTarget!==_src)e.currentTarget.classList.add('drag-over');}
 function dl(e){e.currentTarget.classList.remove('drag-over');}
 function dp(e){
-  if(IS_READONLY)return;
   e.preventDefault();const dst=e.currentTarget;
   if(!dst||!_src||dst===_src){cleanup();return;}
   dst.classList.remove('drag-over');
   const sr=+_src.dataset.row,sc=+_src.dataset.col,dr=+dst.dataset.row,dc=+dst.dataset.col;
   if(sr===-1&&dr===-1){
+    // Officer row swap
     const OS=D.officerSlots;[OS[sc],OS[dc]]=[OS[dc],OS[sc]];
   } else if(sr>=0&&dr>=0&&D.seating){
     const S=D.seating;
@@ -722,17 +755,19 @@ function dp(e){
     const dstCell=S[dr][dc];
     const srcEmpty=!srcCell||srcCell.r==='empty';
     const dstEmpty=!dstCell||dstCell.r==='empty';
-    if(srcEmpty){cleanup();return;}
+    if(srcEmpty){cleanup();return;} // 不能拖空格
     if(dstEmpty){
+      // 移動：src → dst，src 變空
       S[dr][dc]=srcCell;
       S[sr][sc]={n:'',r:'empty'};
     } else {
+      // 互換：兩格都有人
       [S[sr][sc],S[dr][dc]]=[S[dr][dc],S[sr][sc]];
     }
   }
   cleanup();save();renderChart();
 }
-function cleanup(){document.querySelectorAll('.dragging,.drag-over').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});_src=null;}
+function cleanup(){document.querySelectorAll('.dragging,.drag-over').forEach(el=>{el.classList.remove('dragging');el.classList.remove('drag-over');});_src=null;setTimeout(()=>_dragged=false,50);}
 
 // ── WEEKLY ──
 function renderWeekly(){
@@ -746,6 +781,7 @@ function renderWeekly(){
   renderGPs();renderAbs();
 }
 function renderGPs(){
+  // All members as reception options (not just binding)
   const M=D.members.filter(m=>!['guest','deputy','empty'].includes(m.role));
   const mOpts=M.map(m=>`<option value="${m.id}">${xe(m.name)}（${RLABEL[m.role]||m.role}）</option>`).join('');
   const scoreOpts=Object.entries(SCORE_LABEL).map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
@@ -768,9 +804,11 @@ function updGP(i,f,v){D.weekly.gps[i][f]=v;save();}
 function rmGP(i){D.weekly.gps.splice(i,1);save();renderGPs();}
 
 function renderAbs(){
+  // abs = array of member IDs
   const M=D.members.filter(m=>!['guest','deputy','empty','chairman','computer'].includes(m.role));
   const el=document.getElementById('abs-list');el.innerHTML='';
   const absArr=Array.isArray(D.weekly.abs)?D.weekly.abs:[];
+  // Show selected members; also show preview of deputy name
   absArr.forEach((mid,i)=>{
     const selMember=D.members.find(m=>m.id===mid);
     const depName=selMember?selMember.name+'(代)':'（本人姓名）(代)';
@@ -905,30 +943,25 @@ async function exportPDF(){
   }catch(e){alert('PDF 匯出失敗：'+e.message);}
 }
 
-// ── PNG ──
-async function exportPNG(){
-  const el=document.getElementById('pa');
-  try{
-    const canvas=await html2canvas(el,{scale:3,useCORS:true,backgroundColor:'#fff',logging:false});
-    const url=canvas.toDataURL('image/png');
-    const a=document.createElement('a');
-    a.href=url;
-    const t=new Date(),ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
-    a.download=`BNI富鼎_座位表_${ds}.png`;
-    a.click();
-  }catch(e){alert('圖片匯出失敗：'+e.message);}
-}
-
 // ── PERSISTENCE ──
-function save(){
-  if(IS_READONLY) return; // 唯讀模式不寫入
-  localStorage.setItem('bni_v5',JSON.stringify(D));
-}
+function save(){localStorage.setItem('bni_v5',JSON.stringify(D));}
 function load(){
   const raw=localStorage.getItem('bni_v5');
   if(raw){
     try{
-      D=sanitizeData(JSON.parse(raw));
+      D=JSON.parse(raw);
+      if(!D.officerSlots)D.officerSlots=Array(6).fill(null);
+      if(!D.weekly.gps)D.weekly.gps=[];
+      // Migration: old abs was [{name,dep}] → now array of IDs
+      if(D.weekly.abs&&D.weekly.abs.length&&typeof D.weekly.abs[0]==='object'){
+        D.weekly.abs=D.weekly.abs.map(a=>{
+          const m=D.members.find(x=>x.name===a.name);return m?m.id:'';
+        }).filter(Boolean);
+      }
+      if(!D.weekly.abs)D.weekly.abs=[];
+      D.weekly.gps.forEach(p=>{if(!p.score)p.score=3;});
+      // Migration: old chains may not have repId
+      D.chains.forEach(c=>{if(!('repId' in c))c.repId=null;});
     }catch{D=seed();save();}
   }else{D=seed();save();}
 }
@@ -941,13 +974,12 @@ function exportJSON(){
 function importJSON(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{D=sanitizeData(JSON.parse(ev.target.result));save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
+  r.onload=ev=>{try{D=JSON.parse(ev.target.result);save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
   r.readAsText(f);e.target.value='';
 }
 
 // ── TABS ──
 function gotoTab(tab){
-  if(IS_READONLY&&tab!=='seating')return;
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
   document.getElementById('tab-'+tab).classList.add('on');
@@ -961,12 +993,53 @@ function gotoTab(tab){
 
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ── EXPORT IMAGE (PPT 16:9, 1920×1080) ──
+async function exportIMG(){
+  const el=document.getElementById('pa');
+  const btn=event.currentTarget;
+  const orig=btn.textContent;
+  btn.textContent='產出中…';btn.disabled=true;
+  try{
+    // Step 1: 渲染座位圖（scale:2 已夠清晰，避免 OOM）
+    const src=await html2canvas(el,{
+      scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false
+    });
+
+    // Step 2: 建立 1920×1080 畫布（標準 PPT 尺寸）
+    const PPT_W=1920,PPT_H=1080,PADDING=40;
+    const out=document.createElement('canvas');
+    out.width=PPT_W;out.height=PPT_H;
+    const ctx=out.getContext('2d');
+
+    // 白底
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(0,0,PPT_W,PPT_H);
+
+    // Step 3: 等比縮放置中貼入
+    const maxW=PPT_W-PADDING*2,maxH=PPT_H-PADDING*2;
+    const ratio=Math.min(maxW/src.width,maxH/src.height);
+    const dw=Math.round(src.width*ratio);
+    const dh=Math.round(src.height*ratio);
+    const dx=Math.round((PPT_W-dw)/2);
+    const dy=Math.round((PPT_H-dh)/2);
+    ctx.drawImage(src,dx,dy,dw,dh);
+
+    // Step 4: 下載
+    const link=document.createElement('a');
+    const t=new Date();
+    const ds=`${t.getFullYear()}${String(t.getMonth()+1).padStart(2,'0')}${String(t.getDate()).padStart(2,'0')}`;
+    link.download=`BNI富鼎_座位圖_${ds}.png`;
+    link.href=out.toDataURL('image/png',1.0);
+    link.click();
+  }catch(e){
+    alert('圖片匯出失敗：'+e.message);
+  }finally{
+    btn.textContent=orig;btn.disabled=false;
+  }
+}
+
 // ── CLOUD (JSONBin.io) ──
 function getCloudCfg(){
-  // 優先用 URL 帶的金鑰（夥伴連結），不寫 localStorage
-  if(HAS_URL_CREDS){
-    return{key:URL_KEY,bin:URL_BIN};
-  }
   return{
     key:localStorage.getItem('jb_key')||'',
     bin:localStorage.getItem('jb_bin')||''
@@ -980,35 +1053,37 @@ function setCloudStatus(msg,type){
   if(type==='ok'||type==='err') setTimeout(()=>{el.textContent='';el.className='';},4000);
 }
 async function cloudSave(){
-  if(IS_READONLY){alert('唯讀模式無法儲存');return;}
-  // 存檔前先 sanitize
-  D=sanitizeData(D);
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
   setCloudStatus('上傳中…','loading');
   try{
-    const res=await fetch('/api/data',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':key},
       body:JSON.stringify(D)
     });
-    const json=await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const now=new Date();
     const ts=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
     setCloudStatus(`✅ 已儲存 ${ts}`,'ok');
     localStorage.setItem('jb_last_save',ts);
   }catch(e){
-    setCloudStatus('❌ 儲存失敗：'+e.message,'err');
+    setCloudStatus('❌ 儲存失敗','err');
     console.error('CloudSave error:',e);
   }
 }
 async function cloudLoad(){
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin){alert('請先設定雲端 API Key 與 Bin ID（右上角 ⚙️）');return;}
   setCloudStatus('載入中…','loading');
   try{
-    const res=await fetch('/api/data');
-    const json=await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
-    D=sanitizeData(json.data);
-    if(!IS_READONLY) save();
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
+      headers:{'X-Master-Key':key}
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    D=json.record;
+    save(); // 同步到 localStorage
     renderChart();
     if(document.getElementById('tab-weekly').classList.contains('on')) renderWeekly();
     if(document.getElementById('tab-members').classList.contains('on')) renderMembers();
@@ -1016,23 +1091,26 @@ async function cloudLoad(){
     if(document.getElementById('tab-officers').classList.contains('on')) renderOfficers();
     setCloudStatus('✅ 載入成功','ok');
   }catch(e){
-    setCloudStatus('❌ 載入失敗：'+e.message,'err');
+    setCloudStatus('❌ 載入失敗','err');
     console.error('CloudLoad error:',e);
   }
 }
 async function cloudAutoLoad(){
+  const{key,bin}=getCloudCfg();
+  if(!key||!bin) return; // 未設定就跳過，用 localStorage
   setCloudStatus('自動載入…','loading');
   try{
-    const res=await fetch('/api/data');
-    const json=await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(json.error||`HTTP ${res.status}`);
-    D=sanitizeData(json.data);
-    if(!IS_READONLY) save();
+    const res=await fetch(`https://api.jsonbin.io/v3/b/${bin}/latest`,{
+      headers:{'X-Master-Key':key}
+    });
+    if(!res.ok) return;
+    const json=await res.json();
+    D=json.record;
+    save();
     renderChart();
     setCloudStatus('✅ 已同步雲端','ok');
   }catch(e){
     setCloudStatus('（雲端離線，使用本機資料）','err');
-    console.error('CloudAutoLoad error:',e);
   }
 }
 function openCloudModal(){
@@ -1052,87 +1130,16 @@ function saveCloudSettings(){
   localStorage.setItem('jb_bin',bin);
   closeCloudModal();
   alert('✅ 雲端設定已儲存！');
-  cloudAutoLoad();
 }
-
-// ── 產生夥伴專用連結 ──
-function genShareLink(){
-  if(HAS_URL_CREDS){
-    alert('目前已經是夥伴連結模式，無法再產生。請用編輯模式開啟再操作。');
-    return;
-  }
-  const{key,bin}=getCloudCfg();
-  if(!key||!bin){
-    alert('請先設定雲端金鑰（右上角 ⚙️），並建議使用 Access Key（只給 READ 權限）。');
-    return;
-  }
-  // 警告：如果是 Master Key，提醒改用 Access Key
-  const isLikelyMaster = key.startsWith('$2');
-  if(isLikelyMaster){
-    if(!confirm('⚠️ 警告：你目前用的可能是 Master Key！\n\n這把金鑰有完整權限，放進夥伴連結裡有被亂改資料的風險。\n\n強烈建議先到 jsonbin.io 建立一把「只開 READ 權限」的 Access Key，再重新操作。\n\n仍要繼續產生連結嗎？')) return;
-  }
-  const k=encodeURIComponent(btoa(key));
-  const b=encodeURIComponent(btoa(bin));
-  const base=location.origin+location.pathname;
-  const url=`${base}?readonly=1&k=${k}&b=${b}`;
-  // 嘗試複製到剪貼簿
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    navigator.clipboard.writeText(url).then(()=>{
-      showShareModal(url,true);
-    }).catch(()=>{
-      showShareModal(url,false);
-    });
-  }else{
-    showShareModal(url,false);
-  }
-}
-
-function showShareModal(url,copied){
-  // 移除舊的（如果有）
-  const old=document.getElementById('share-modal');
-  if(old) old.remove();
-  const modal=document.createElement('div');
-  modal.id='share-modal';
-  modal.className='modal-bg open';
-  modal.innerHTML=`
-    <div class="modal" style="width:560px">
-      <h3>🔗 夥伴專用連結</h3>
-      <p class="modal-hint">${copied?'✅ 連結已複製到剪貼簿！':'請手動複製下方連結。'}直接傳給夥伴即可，他們打開就能看到座位圖，無需任何設定。</p>
-      <label>唯讀連結</label>
-      <textarea id="share-url" readonly style="width:100%;height:72px;padding:9px 12px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:none;word-break:break-all" onclick="this.select()">${url}</textarea>
-      <p class="modal-hint" style="margin-top:10px;color:#c5221f">
-        ⚠️ 重要提醒：<br>
-        1. 連結中的金鑰已做 Base64 編碼混淆，但並非加密。請務必使用<strong>只給 READ 權限的 Access Key</strong>，勿用 Master Key。<br>
-        2. 夥伴端無法編輯資料，也不會儲存金鑰到他們的瀏覽器。<br>
-        3. 若需撤銷存取，請到 jsonbin.io 直接刪除那把 Access Key。
-      </p>
-      <div class="modal-actions">
-        <button class="btn btn-blue" onclick="copyShareUrl()">📋 再次複製</button>
-        <button class="btn btn-slate" onclick="document.getElementById('share-modal').remove()">關閉</button>
-      </div>
-    </div>`;
-  modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
-  document.body.appendChild(modal);
-}
-
-function copyShareUrl(){
-  const ta=document.getElementById('share-url');
-  if(!ta) return;
-  ta.select();
-  try{
-    navigator.clipboard.writeText(ta.value);
-    alert('✅ 已複製');
-  }catch(e){
-    document.execCommand('copy');
-    alert('✅ 已複製');
-  }
-}
+// 點 modal 背景關閉
 document.addEventListener('click',e=>{
   if(e.target.id==='cloudModal') closeCloudModal();
 });
 
 // ── EDIT SEAT MODAL ──
+// 色塊：角色預設色（7個）+ 4個額外顏色
 const COLOR_PRESETS=[
+  // 身分顏色（前8個）
   {label:'一般',   color:'#f4f4f4',role:'regular',   fg:'#333'},
   {label:'締結組', color:'#4e87c8',role:'binding',   fg:'#fff'},
   {label:'導生',   color:'#5fa83e',role:'mentee',    fg:'#fff'},
@@ -1141,6 +1148,7 @@ const COLOR_PRESETS=[
   {label:'來賓',   color:'#f9e04b',role:'guest',     fg:'#333'},
   {label:'代理人', color:'#8B0000',role:'deputy',    fg:'#fff'},
   {label:'幹部',   color:'#2E4899',role:'chairman',  fg:'#fff'},
+  // 自訂色（後4個，role統一設 regular）
   {label:'橘',     color:'#FF7043',role:'regular',   fg:'#fff', custom:true},
   {label:'青',     color:'#26C6DA',role:'regular',   fg:'#333', custom:true},
   {label:'草綠',   color:'#8BC34A',role:'regular',   fg:'#333', custom:true},
@@ -1152,14 +1160,15 @@ function textColor(hex){
   return(r*299+g*587+b*114)/1000>128?'#222':'#fff';
 }
 
-let _editTarget=null,_selectedSwatch=5,_editOriginalName='';
+let _editTarget=null,_selectedSwatch=5;
 
 function buildSwatches(){
   const el=document.getElementById('em-swatches');
   if(!el) return;
-  el.innerHTML='';
+  el.innerHTML=''; // rebuild each time to reflect selection
   COLOR_PRESETS.forEach((p,i)=>{
     if(i===8){
+      // separator before custom colors
       el.insertAdjacentHTML('beforeend','<div class="em-sep"></div><div class="em-sep-lbl">＋ 自訂顏色</div>');
     }
     const checkMark=i===_selectedSwatch?'✓':'';
@@ -1170,150 +1179,19 @@ function buildSwatches(){
   });
 }
 
-let _editGuestScore=3;
-
 function selectSwatch(idx){
   _selectedSwatch=idx;
-  buildSwatches();
-  // 來賓色塊(index 5)選中時顯示分數選擇
-  const scoreWrap=document.getElementById('em-guest-score');
-  if(scoreWrap){
-    if(idx===5){
-      scoreWrap.style.display='block';
-      buildScorePicker();
-    }else{
-      scoreWrap.style.display='none';
-    }
-  }
-  updateSyncHint();
-}
-
-function buildScorePicker(){
-  const el=document.getElementById('em-score-stars');
-  if(!el) return;
-  el.innerHTML='';
-  for(let i=1;i<=5;i++){
-    const d=document.createElement('div');
-    d.className='em-star'+(i===_editGuestScore?' sel':'');
-    d.innerHTML='★'.repeat(i)+'<span class="em-star-lbl">'+i+'星</span>';
-    d.onclick=()=>{_editGuestScore=i;buildScorePicker();};
-    el.appendChild(d);
-  }
-}
-
-// 即時更新同步提示
-function updateSyncHint(){
-  const hint=document.getElementById('em-sync-hint');
-  const syncBox=document.getElementById('em-sync');
-  if(!hint||!syncBox) return;
-  if(!syncBox.checked){hint.style.display='none';return;}
-  const newName=(document.getElementById('em-name').value||'').trim();
-  const preset=COLOR_PRESETS[_selectedSwatch]||COLOR_PRESETS[0];
-  const newRole=preset.role;
-  const msgs=[];
-
-  if(!newName){
-    hint.textContent='⚠️ 姓名為空，無法同步';
-    hint.style.color='#c62828';
-    hint.style.display='block';
-    return;
-  }
-
-  const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
-  const origCell=(_editTarget&&D.seating&&D.seating[_editTarget.row])?D.seating[_editTarget.row][_editTarget.col]:null;
-  const origRole=origCell?origCell.r:'empty';
-  const isNewGuest=newRole==='guest';
-  const wasGuest=origRole==='guest';
-
-  // 1. 名字變動
-  if(origMember&&newName!==_editOriginalName){
-    const dup=D.members.find(m=>m.name===newName&&m.id!==origMember.id);
-    if(dup){
-      hint.textContent=`⚠️ 名冊中已有另一位「${newName}」，無法改名造成重複`;
-      hint.style.color='#c62828';
-      hint.style.display='block';
-      return;
-    }
-    msgs.push(`✏️ 將把名冊中「${_editOriginalName}」改名為「${newName}」`);
-  }
-
-  // 2. 身分變動（只對名冊成員有意義，且不是來賓↔成員互改的情況）
-  if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
-    msgs.push(`🔄 將把「${origMember.name}」的身分從「${RLABEL[origMember.role]||origMember.role}」改為「${RLABEL[newRole]||newRole}」`);
-    if(['mentor','mentee'].includes(newRole)){
-      msgs.push(`💡 改為${RLABEL[newRole]}後，請到成員管理設定配對對象`);
-    }
-  }
-
-  // 3. 改成來賓
-  if(isNewGuest&&!wasGuest){
-    const existsInMembers=D.members.find(m=>m.name===newName);
-    if(existsInMembers){
-      msgs.push(`ℹ️ 「${newName}」是名冊成員，座位圖將顯示為來賓色，但不會加入本週來賓清單`);
-    }else{
-      const existsInGps=(D.weekly.gps||[]).find(p=>p.guest===newName);
-      if(existsInGps){
-        msgs.push(`ℹ️ 「${newName}」已在本週來賓清單中`);
-      }else{
-        msgs.push(`➕ 將「${newName}」加入本週來賓清單（${_editGuestScore}★，接待會員待補）`);
-      }
-    }
-  }
-
-  // 4. 從來賓改回會員
-  if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
-    const inGps=(D.weekly.gps||[]).find(p=>p.guest===origCell.n);
-    if(inGps){
-      msgs.push(`➖ 將把「${origCell.n}」從本週來賓清單移除`);
-    }
-  }
-
-  // 5. 空格輸入新名字
-  if(!origMember&&!wasGuest&&newName&&newRole!=='deputy'){
-    const exists=D.members.find(m=>m.name===newName);
-    if(!exists&&!isNewGuest){
-      msgs.push(`➕ 將在名冊中新增「${newName}」為${RLABEL[newRole]||newRole}`);
-    }else if(exists&&exists.role!==newRole&&!isNewGuest){
-      msgs.push(`🔄 名冊中已有「${newName}」，將同步更新身分為「${RLABEL[newRole]||newRole}」`);
-    }
-  }
-
-  if(msgs.length===0){
-    hint.textContent='（無變更需同步）';
-    hint.style.color='#888';
-  }else{
-    hint.innerHTML=msgs.join('<br>');
-    hint.style.color='#1a3a6b';
-  }
-  hint.style.display='block';
+  buildSwatches(); // rebuild to update selection state
 }
 
 function editCell(row,col){
-  if(IS_READONLY) return;
   if(_dragged) return;
   if(!D.seating||!D.seating[row]) return;
-  const cell=D.seating[row][col]||{n:'',r:'empty'};
-  // 空白格走「選人入座」新 modal
-  if(cell.r==='empty'||!cell.n){
-    openPickModal(row,col);
-    return;
-  }
-  // 有人的格子走原本的編輯視窗
   _editTarget={row,col};
-  const origName=cell.n||'';
-  _editOriginalName=origName;
-  _editGuestScore=(cell.r==='guest'&&cell.s)?cell.s:3;
-  document.getElementById('em-name').value=origName;
-  const syncWrap=document.getElementById('em-sync-wrap');
-  const syncBox=document.getElementById('em-sync');
-  if(cell.r==='deputy'){
-    syncWrap.style.display='none';
-  }else{
-    syncWrap.style.display='flex';
-  }
-  syncBox.checked=false;
-  updateSyncHint();
+  const cell=D.seating[row][col]||{n:'',r:'empty'};
+  document.getElementById('em-name').value=(cell.r==='empty')?'':(cell.n||'');
   buildSwatches();
+  // 自動對應色塊
   let idx=5;
   if(cell.color){
     const fi=COLOR_PRESETS.findIndex(p=>p.color.toLowerCase()===cell.color.toLowerCase());
@@ -1338,142 +1216,13 @@ function saveEditModal(){
   const name=document.getElementById('em-name').value.trim();
   const preset=COLOR_PRESETS[_selectedSwatch]||COLOR_PRESETS[0];
   const cell={n:name,r:preset.role};
+  // 自訂色或顏色與身分預設不同時，存 color override
   if(preset.custom){
     cell.color=preset.color;
   } else {
     const defColor=(RCOLOR[preset.role]||'#f4f4f4').toLowerCase();
     if(preset.color.toLowerCase()!==defColor) cell.color=preset.color;
   }
-  // 來賓格子：記錄分數
-  if(preset.role==='guest'){
-    if(_editGuestScore&&_editGuestScore!==3) cell.s=_editGuestScore;
-  }
-
-  // ── 同步邏輯 ──
-  const syncBox=document.getElementById('em-sync');
-  const wantSync=syncBox&&syncBox.checked&&preset.role!=='deputy';
-
-  if(wantSync&&name){
-    const origMember=_editOriginalName?D.members.find(m=>m.name===_editOriginalName):null;
-    const origCell=D.seating[row]?D.seating[row][col]:null;
-    const origRole=origCell?origCell.r:'empty';
-    const newRole=preset.role;
-    const isNewGuest=newRole==='guest';
-    const wasGuest=origRole==='guest';
-
-    // 1. 檢查改名字的重複
-    if(origMember&&name!==_editOriginalName){
-      const dup=D.members.find(m=>m.name===name&&m.id!==origMember.id);
-      if(dup){
-        alert(`⚠️ 無法同步：名冊中已有另一位「${name}」，不能造成名字重複。`);
-        return;
-      }
-    }
-
-    // 2. 組確認訊息
-    const actions=[];
-    if(origMember&&name!==_editOriginalName){
-      actions.push(`• 將名冊中「${_editOriginalName}」改名為「${name}」`);
-    }
-    if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
-      actions.push(`• 將「${origMember.name}」的身分從「${RLABEL[origMember.role]}」改為「${RLABEL[newRole]}」`);
-    }
-    if(isNewGuest&&!wasGuest&&!D.members.find(m=>m.name===name)&&!(D.weekly.gps||[]).find(p=>p.guest===name)){
-      actions.push(`• 將「${name}」加入本週來賓清單（${_editGuestScore}★）`);
-    }
-    if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
-      const inGps=(D.weekly.gps||[]).find(p=>p.guest===origCell.n);
-      if(inGps) actions.push(`• 將「${origCell.n}」從本週來賓清單移除`);
-    }
-    if(!origMember&&!wasGuest&&!isNewGuest){
-      const exists=D.members.find(m=>m.name===name);
-      if(!exists){
-        actions.push(`• 在名冊中新增「${name}」為${RLABEL[newRole]||newRole}`);
-      }else if(exists.role!==newRole){
-        actions.push(`• 更新「${name}」的身分為「${RLABEL[newRole]}」`);
-      }
-    }
-
-    if(actions.length>0){
-      const msg='確認執行以下同步動作？\n\n'+actions.join('\n')+'\n\n（取消則只更新座位格，不動名冊/來賓清單）';
-      if(!confirm(msg)){
-        // 取消 → 只寫座位格，不執行同步
-        if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
-        D.seating[row][col]=cell;
-        save();closeEditModal();renderChart();
-        return;
-      }
-    }
-
-    // 3. 執行同步
-
-    // 3a. 改名字（並連動所有座位圖同名格）
-    if(origMember&&name!==_editOriginalName){
-      origMember.name=name;
-      if(D.seating&&Array.isArray(D.seating)){
-        D.seating.forEach(r=>r.forEach(c=>{
-          if(c&&c.n===_editOriginalName) c.n=name;
-        }));
-      }
-      // 也要更新本週來賓清單（如果原名字出現在 gps.guest）
-      (D.weekly.gps||[]).forEach(p=>{
-        if(p.guest===_editOriginalName) p.guest=name;
-      });
-    }
-
-    // 3b. 改身分
-    if(origMember&&!isNewGuest&&origMember.role!==newRole&&['regular','binding','mentor','mentee','reception','chairman','computer'].includes(newRole)){
-      origMember.role=newRole;
-      // 離開導師/導生時清掉配對
-      if(!['mentor','mentee'].includes(newRole)){
-        origMember.pair=null;
-        // 也清掉其他人對他的配對
-        D.members.forEach(x=>{if(x.pair===origMember.id) x.pair=null;});
-      }
-      if(['mentor','mentee'].includes(newRole)){
-        setTimeout(()=>alert(`💡 已將「${origMember.name}」設為${RLABEL[newRole]}，請到「成員管理」設定配對對象。`),100);
-      }
-    }
-
-    // 3c. 加入本週來賓清單
-    if(isNewGuest&&!wasGuest&&!D.members.find(m=>m.name===name)){
-      if(!Array.isArray(D.weekly.gps)) D.weekly.gps=[];
-      const existsInGps=D.weekly.gps.find(p=>p.guest===name);
-      if(!existsInGps){
-        D.weekly.gps.push({guest:name,bid:'',score:_editGuestScore});
-      }
-    }
-
-    // 3d. 從本週來賓清單移除
-    if(wasGuest&&!isNewGuest&&origCell&&origCell.n){
-      if(Array.isArray(D.weekly.gps)){
-        D.weekly.gps=D.weekly.gps.filter(p=>p.guest!==origCell.n);
-      }
-    }
-
-    // 3e. 空格輸入新名字 → 新增到名冊
-    if(!origMember&&!wasGuest&&!isNewGuest){
-      const exists=D.members.find(m=>m.name===name);
-      if(!exists){
-        D.members.push({
-          id:'m'+Date.now(),
-          name,
-          role:newRole,
-          chain:null,
-          pair:null
-        });
-      }else if(exists.role!==newRole){
-        exists.role=newRole;
-      }
-    }
-  }
-
-  // 來賓格子在同步時有更新 gps 分數也要反映
-  if(wantSync&&preset.role==='guest'&&name){
-    const g=(D.weekly.gps||[]).find(p=>p.guest===name);
-    if(g) g.score=_editGuestScore;
-  }
-
   if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
   D.seating[row][col]=cell;
   save();closeEditModal();renderChart();
@@ -1485,172 +1234,11 @@ function clearEditCell(){
   if(D.seating[row]) D.seating[row][col]={n:'',r:'empty'};
   save();closeEditModal();renderChart();
 }
-
-// ── PICK PERSON MODAL ──
-let _pickTarget=null;
-
-function openPickModal(row,col){
-  _pickTarget={row,col};
-  document.getElementById('pp-search').value='';
-  document.getElementById('pp-manual').value='';
-  renderPickList();
-  document.getElementById('pp-modal').classList.add('open');
-  setTimeout(()=>document.getElementById('pp-search').focus(),80);
-}
-
-function closePickModal(){
-  document.getElementById('pp-modal').classList.remove('open');
-  _pickTarget=null;
-}
-
-// 計算哪些人還沒入座
-function getUnseatedCandidates(){
-  const seated=new Set();
-  // 掃描座位圖現有人員
-  if(D.seating&&Array.isArray(D.seating)){
-    D.seating.forEach(r=>r.forEach(c=>{
-      if(c&&c.n&&c.r!=='empty'){
-        let n=c.n;
-        // 代理人名字會帶 (代) 後綴
-        if(c.r==='deputy') n=n.replace(/\(代\)$/,'');
-        seated.add(n);
-      }
-    }));
-  }
-  // 扣掉主席、電腦手、幹部
-  const specialIds=[D.weekly.chairman,D.weekly.comp1,D.weekly.comp2,...D.officerSlots].filter(Boolean);
-  specialIds.forEach(id=>{
-    const m=D.members.find(x=>x.id===id);
-    if(m) seated.add(m.name);
-  });
-  // 扣掉請假會員（已由代理人代替）
-  (D.weekly.abs||[]).forEach(id=>{
-    const m=D.members.find(x=>x.id===id);
-    if(m) seated.add(m.name);
-  });
-
-  // 未入座會員
-  const unseatedMembers=D.members.filter(m=>!seated.has(m.name)&&!['guest','deputy','empty'].includes(m.role));
-
-  // 未入座來賓（從本週來賓配對中找）
-  const unseatedGuests=[];
-  (D.weekly.gps||[]).forEach(p=>{
-    if(p.guest&&!seated.has(p.guest)){
-      const bm=D.members.find(x=>x.id===p.bid);
-      unseatedGuests.push({
-        name:p.guest,
-        bindingName:bm?bm.name:'',
-        score:p.score||3,
-        isGuest:true
-      });
-    }
-  });
-
-  return{guests:unseatedGuests,members:unseatedMembers};
-}
-
-function renderPickList(){
-  const list=document.getElementById('pp-list');
-  const q=(document.getElementById('pp-search').value||'').trim().toLowerCase();
-  const{guests,members}=getUnseatedCandidates();
-
-  // 搜尋過濾
-  const fg=q?guests.filter(g=>g.name.toLowerCase().includes(q)):guests;
-  const fm=q?members.filter(m=>m.name.toLowerCase().includes(q)):members;
-
-  if(fg.length===0&&fm.length===0){
-    list.innerHTML=`<div class="pp-empty">${q?'🔍 找不到符合的人':'✨ 所有人都已入座'}</div>`;
-    return;
-  }
-
-  // 會員按身分分組排序
-  const groupOrder=['binding','mentor','mentee','reception','regular'];
-  const groupLabel={binding:'💼 締結組',mentor:'👨‍🏫 導師',mentee:'📚 導生',reception:'🤝 接待組',regular:'👥 一般會員'};
-  const byGroup={};
-  fm.forEach(m=>{
-    const g=groupOrder.includes(m.role)?m.role:'regular';
-    (byGroup[g]=byGroup[g]||[]).push(m);
-  });
-
-  let h='';
-
-  // 來賓區塊
-  if(fg.length>0){
-    h+=`<div class="pp-group">
-      <div class="pp-group-hdr">🟡 本週來賓 <span class="pp-count">(${fg.length})</span></div>`;
-    fg.forEach(g=>{
-      const stars=g.score&&g.score!==3?` ★${g.score}`:'';
-      const tag=g.bindingName?`接待：${g.bindingName}${stars}`:stars;
-      h+=`<div class="pp-item" onclick="pickGuest('${xe(g.name).replace(/'/g,"\\'")}','${xe(g.bindingName).replace(/'/g,"\\'")}',${g.score||3})">
-        <div class="pp-item-dot" style="background:${RCOLOR.guest}"></div>
-        <div class="pp-item-name">${xe(g.name)}</div>
-        <div class="pp-item-tag">${xe(tag)}</div>
-      </div>`;
-    });
-    h+=`</div>`;
-  }
-
-  // 會員分組
-  groupOrder.forEach(role=>{
-    const arr=byGroup[role];
-    if(!arr||arr.length===0) return;
-    h+=`<div class="pp-group">
-      <div class="pp-group-hdr">${groupLabel[role]} <span class="pp-count">(${arr.length})</span></div>`;
-    arr.forEach(m=>{
-      h+=`<div class="pp-item" onclick="pickMember('${m.id}')">
-        <div class="pp-item-dot" style="background:${RCOLOR[m.role]||'#f4f4f4'}"></div>
-        <div class="pp-item-name">${xe(m.name)}</div>
-      </div>`;
-    });
-    h+=`</div>`;
-  });
-
-  list.innerHTML=h;
-}
-
-function pickMember(mid){
-  if(!_pickTarget) return;
-  const m=D.members.find(x=>x.id===mid);
-  if(!m) return;
-  const{row,col}=_pickTarget;
-  const cell={n:m.name,r:m.role};
-  if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
-  D.seating[row][col]=cell;
-  save();closePickModal();renderChart();
-}
-
-function pickGuest(name,bindingName,score){
-  if(!_pickTarget) return;
-  const{row,col}=_pickTarget;
-  const cell={n:name,r:'guest'};
-  if(score&&score!==3) cell.s=score;
-  if(!D.seating[row]) D.seating[row]=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
-  D.seating[row][col]=cell;
-  save();closePickModal();renderChart();
-}
-
-function goManualEdit(){
-  const name=(document.getElementById('pp-manual').value||'').trim();
-  if(!_pickTarget) return;
-  const{row,col}=_pickTarget;
-  closePickModal();
-  // 開原本的詳細編輯視窗，預填名字
-  _editTarget={row,col};
-  _editOriginalName='';
-  _editGuestScore=3;
-  document.getElementById('em-name').value=name;
-  document.getElementById('em-sync-wrap').style.display='flex';
-  document.getElementById('em-sync').checked=false;
-  updateSyncHint();
-  buildSwatches();
-  selectSwatch(0); // 預設一般會員
-  document.getElementById('em-modal').classList.add('open');
-  setTimeout(()=>{const n=document.getElementById('em-name');n.focus();n.select();},80);
-}
-
+// ── ADD SEAT ROW ──
 function addSeatRow(){
   if(!D.seating) D.seating=[];
   const newRow=Array(6).fill(null).map(()=>({n:'',r:'empty'}));
+  // Insert before deputy row if last row has deputies
   const last=D.seating[D.seating.length-1];
   const hasDeputy=last&&last.some(c=>c&&c.r==='deputy');
   if(hasDeputy) D.seating.splice(D.seating.length-1,0,newRow);
@@ -1658,16 +1246,7 @@ function addSeatRow(){
   save();renderChart();
 }
 
-// ── INIT ──
-document.addEventListener('DOMContentLoaded',()=>{
-  if(IS_READONLY){
-    document.body.classList.add('readonly');
-    document.getElementById('ro-badge').style.display='inline-block';
-  }
-  load();
-  renderChart();
-  cloudAutoLoad();
-});
+document.addEventListener('DOMContentLoaded',()=>{load();renderChart();cloudAutoLoad();});
 </script>
 </body>
 </html>
