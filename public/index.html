@@ -60,21 +60,21 @@ label.btn{cursor:pointer}
 .stage-box{border:2px solid #333;text-align:center;font-size:22px;font-weight:700;letter-spacing:8px;color:#333;display:flex;align-items:center;justify-content:center;padding:8px}
 .chair-box{background:#2E4899;color:#fff;border-radius:6px;text-align:center;padding:8px 10px;min-width:90px}
 .comp-box{background:#8B6914;color:#fff;border-radius:6px;text-align:center;padding:8px 10px;min-width:105px}
-.box-lbl{font-size:10px;opacity:.75;margin-bottom:3px}
-.box-name{font-weight:700;font-size:15px;line-height:1.4}
+.box-lbl{font-size:12px;opacity:.75;margin-bottom:3px}
+.box-name{font-weight:700;font-size:19px;line-height:1.4}
 .sg{width:100%;border-collapse:collapse;margin-top:3px}
-.sg td{border:1px solid #ddd;text-align:center;font-size:15px;font-weight:700;height:38px;min-width:95px;padding:0 4px;vertical-align:middle}
+.sg td{border:1px solid #ddd;text-align:center;font-size:19px;font-weight:700;height:46px;min-width:100px;padding:0 4px;vertical-align:middle}
 .rn{width:24px!important;min-width:24px!important;background:#f5f5f5;color:#999;font-size:11px;border:none!important;border-right:1px solid #e0e0e0!important}
 /* Officer row — 左右各三格對齊座位欄，中間空白 */
 .officer-row{display:flex;gap:0;margin:5px 0 4px;align-items:stretch}
 .officer-group{display:flex;gap:4px;flex:none}
 .officer-mid-gap{flex:1}  /* 純空白撐開 */
-.officer-cell{width:95px;min-width:95px;height:48px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;cursor:grab;user-select:none;transition:filter .1s}
+.officer-cell{width:100px;min-width:100px;height:56px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;cursor:grab;user-select:none;transition:filter .1s}
 .officer-cell:hover{filter:brightness(.9)}
-.off-title{font-size:10px;color:rgba(255,255,255,.7);line-height:1;margin-bottom:3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
-.off-name{font-size:15px;font-weight:700;line-height:1.2;text-align:center}
+.off-title{font-size:12px;color:rgba(255,255,255,.7);line-height:1;margin-bottom:3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%}
+.off-name{font-size:19px;font-weight:700;line-height:1.2;text-align:center}
 .off-empty .off-title{color:rgba(255,255,255,.4)}
-.off-empty .off-name{color:rgba(255,255,255,.3);font-weight:400;font-style:italic;font-size:11px}
+.off-empty .off-name{color:rgba(255,255,255,.3);font-weight:400;font-style:italic;font-size:13px}
 /* Seat grid separators — 細示意條 */
 .sep-tbl{width:6px!important;min-width:6px!important;max-width:6px!important;padding:0!important;border:none!important;background:linear-gradient(90deg,#e8d0a8,#c8962a,#e8d0a8);position:relative}
 .sep-aisle{width:18px!important;min-width:18px!important;max-width:18px!important;padding:0!important;border:none!important;background:repeating-linear-gradient(90deg,#e8e8e8 0px,#e8e8e8 2px,#fff 2px,#fff 6px)}
@@ -852,9 +852,8 @@ function renderMembers(){
     const pSel=pairCand.filter(p=>p.id!==m.id).map(p=>`<option value="${p.id}"${m.pair===p.id?' selected':''}>${xe(p.name)}（${RLABEL[p.role]}）</option>`).join('');
     const slotIdx=OS.indexOf(m.id);
     const slotLabel=slotIdx>=0?OFFICER_SLOTS[slotIdx].title:'—';
-    const dot=`<span class="rdot" style="background:${RCOLOR[m.role]||'#eee'}"></span>`;
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${dot}${xe(m.name)}</td>
+    tr.innerHTML=`<td style="white-space:nowrap"><span class="rdot" style="background:${RCOLOR[m.role]||'#eee'}"></span><input type="text" value="${xe(m.name)}" data-orig="${xe(m.name)}" onchange="renameM('${m.id}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="border:1px solid transparent;background:transparent;font-weight:600;font-size:13px;padding:3px 6px;border-radius:4px;width:100px" onfocus="this.style.border='1px solid #2E4899';this.style.background='#fff'" onblur="this.style.border='1px solid transparent';this.style.background='transparent'" title="點選可修改姓名"></td>
       <td><select onchange="updM('${m.id}','role',this.value)">${Object.entries(RLABEL).filter(([k])=>!['guest','deputy','empty'].includes(k)).map(([k,v])=>`<option value="${k}"${m.role===k?' selected':''}>${v}</option>`).join('')}</select></td>
       <td><select onchange="updM('${m.id}','chain',this.value||null)"><option value="">— 無 —</option>${cSel}</select></td>
       <td>${['mentor','mentee'].includes(m.role)?`<select onchange="updM('${m.id}','pair',this.value||null)"><option value="">— 未配對 —</option>${pSel}</select>`:`<span style="color:#ccc;font-size:12px">—</span>`}</td>
@@ -875,6 +874,18 @@ function addMember(){
 function updM(id,f,v){
   const m=D.members.find(x=>x.id===id);if(!m)return;
   m[f]=v||null;save();if(['role','chain','pair'].includes(f))renderMembers();
+}
+function renameM(id,inputEl){
+  const m=D.members.find(x=>x.id===id);if(!m){return;}
+  const orig=inputEl.getAttribute('data-orig')||m.name||'';
+  const nv=(inputEl.value||'').trim();
+  if(!nv){alert('姓名不能為空');inputEl.value=orig;return;}
+  if(nv===orig){return;}
+  if(D.members.some(x=>x.id!==id&&x.name===nv)){
+    if(!confirm(`已有另一位成員叫「${nv}」，確定要改成同名嗎？`)){inputEl.value=orig;return;}
+  }
+  m.name=nv;inputEl.setAttribute('data-orig',nv);
+  save();renderChart();renderMembers();
 }
 function delM(id){
   if(!confirm('確定刪除此成員？'))return;
