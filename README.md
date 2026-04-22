@@ -1,24 +1,53 @@
-# BNI 高雄富鼎分會 · 座位管理系統
+# bni-fuding-seating
 
-## 本機測試
-```bash
-npm install
-npm start
-```
-打開瀏覽器進入 http://localhost:3000
+BNI 高雄富鼎分會 · 座位管理系統。
 
-## Railway 部署
-1. 將此專案推上 GitHub
-2. 在 Railway 建立新專案 → Deploy from GitHub
-3. 選擇此 repo
-4. Railway 會自動讀 package.json 並執行 `npm start`
+> **此系統獨立運作**，與 [bni-kpi](https://github.com/arthurkuo42-star/bni-kpi) / [bni-speaker-tracker](https://github.com/arthurkuo42-star/bni-speaker-tracker) 無關。只共用同一個 JSONBin 帳號。
+
+## 用途
+
+- 管理分會會員座位安排
+- 支援編輯模式與唯讀模式
+
+## 技術棧
+
+- Node.js + Express
+- 前後端一體（`public/index.html` 由同一個 server 提供）
+- 資料存 JSONBin `BNI seat` bin
 
 ## 使用模式
-- **編輯模式**（預設）：`https://你的網址/`
-- **唯讀模式**（給夥伴看）：`https://你的網址/?readonly=1`
 
-## 雲端設定
-首次使用需到 JSONBin.io 註冊並取得 Master Key 與 Bin ID，
-在右上角「⚙️ 雲端設定」填入即可。
+| 模式 | URL | 說明 |
+|---|---|---|
+| 編輯 | `https://你的網址/` | 預設，可拖曳與儲存 |
+| 唯讀 | `https://你的網址/?readonly=1` | 給一般夥伴檢視 |
 
-唯讀模式也需要設定一次雲端金鑰（建議使用 Access Key 限制權限）。
+> ⚠️ 目前後端沒有寫入認證，唯讀模式只是前端不顯示編輯按鈕。知道 URL 直接 POST `/api/data` 的話任何人都能寫。未來建議加 `ADMIN_KEY` 保護。
+
+## 本機測試
+
+```bash
+npm install
+cp .env.example .env   # 再填實際值
+npm start              # 預設 localhost:3000
+```
+
+## Railway 部署
+
+專案 `comfortable-reverence`。推 `main` → 自動部署。環境變數改動後手動 Redeploy。
+
+## 環境變數
+
+見 [`.env.example`](.env.example)。
+
+| 變數 | 說明 |
+|---|---|
+| `JSONBIN_KEY` | ⚠️ 變數名與 bni-kpi 不同，但**值是同一把** Master Key |
+| `JSONBIN_BIN` | 座位 bin（BNI seat，`69d750fe...`）|
+| `PORT` | 本機開發用，Railway 會自動給 |
+
+**regenerate Master Key 時別忘了更新本 service 的 `JSONBIN_KEY`**（變數名不同容易漏）。
+
+## 相關
+
+- 整體架構：見本機 `富鼎網站/ARCHITECTURE.md`
