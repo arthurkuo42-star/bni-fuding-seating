@@ -263,7 +263,7 @@ label.btn{cursor:pointer}
       <table class="mtbl">
         <thead><tr>
           <th style="width:100px">姓名</th><th style="width:110px">身分</th>
-          <th style="width:140px">產業服務鏈</th><th style="width:150px">導師/導生配對</th>
+          <th style="width:140px">產業服務鏈</th><th style="width:180px">導師配對（1–3 位導生）</th>
           <th style="width:130px">幹部職位</th><th style="width:70px">操作</th>
         </tr></thead>
         <tbody id="mbody"></tbody>
@@ -845,22 +845,57 @@ function renderMembers(){
   const co=C.map(c=>`<option value="${c.id}">${xe(c.name)}</option>`).join('');
   document.getElementById('nm-chain').innerHTML=`<option value="">— 無產業鏈 —</option>`+co;
   document.getElementById('mcnt').textContent=`（共 ${M.length} 人）`;
-  const pairCand=M.filter(m=>['mentor','mentee'].includes(m.role));
   const tbody=document.getElementById('mbody');tbody.innerHTML='';
   M.forEach(m=>{
     const cSel=C.map(c=>`<option value="${c.id}"${m.chain===c.id?' selected':''}>${xe(c.name)}</option>`).join('');
-    const pSel=pairCand.filter(p=>p.id!==m.id).map(p=>`<option value="${p.id}"${m.pair===p.id?' selected':''}>${xe(p.name)}（${RLABEL[p.role]}）</option>`).join('');
     const slotIdx=OS.indexOf(m.id);
     const slotLabel=slotIdx>=0?OFFICER_SLOTS[slotIdx].title:'—';
+    const pairCellHtml=pairCell(m,M);
     const tr=document.createElement('tr');
     tr.innerHTML=`<td style="white-space:nowrap"><span class="rdot" style="background:${RCOLOR[m.role]||'#eee'}"></span><input type="text" value="${xe(m.name)}" data-orig="${xe(m.name)}" onchange="renameM('${m.id}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="border:1px solid transparent;background:transparent;font-weight:600;font-size:13px;padding:3px 6px;border-radius:4px;width:100px" onfocus="this.style.border='1px solid #2E4899';this.style.background='#fff'" onblur="this.style.border='1px solid transparent';this.style.background='transparent'" title="點選可修改姓名"></td>
       <td><select onchange="updM('${m.id}','role',this.value)">${Object.entries(RLABEL).filter(([k])=>!['guest','deputy','empty'].includes(k)).map(([k,v])=>`<option value="${k}"${m.role===k?' selected':''}>${v}</option>`).join('')}</select></td>
       <td><select onchange="updM('${m.id}','chain',this.value||null)"><option value="">— 無 —</option>${cSel}</select></td>
-      <td>${['mentor','mentee'].includes(m.role)?`<select onchange="updM('${m.id}','pair',this.value||null)"><option value="">— 未配對 —</option>${pSel}</select>`:`<span style="color:#ccc;font-size:12px">—</span>`}</td>
+      <td>${pairCellHtml}</td>
       <td><span style="font-size:12px;color:${slotIdx>=0?'#1a3a6b':'#bbb'};font-weight:${slotIdx>=0?600:400}">${slotIdx>=0?'🎖️ '+slotLabel:'—'}</span></td>
       <td><button class="btn btn-red btn-sm" onclick="delM('${m.id}')">刪除</button></td>`;
     tbody.appendChild(tr);
   });
+}
+
+// 導師配對欄位（依角色而異）
+// - mentor: 3 個導生槽下拉
+// - mentee: 唯讀顯示所屬導師
+// - 其他: 破折號
+function pairCell(m,M){
+  if(m.role==='mentor'){
+    const myMentees=M.filter(x=>x.role==='mentee'&&x.pair===m.id);
+    const rows=[];
+    for(let i=0;i<3;i++){
+      const cur=myMentees[i]; // 可能為 undefined（空槽）
+      const curId=cur?cur.id:'';
+      // 本導師其他 slot 已占用的導生，不給此 slot 重複選
+      const takenByOtherSlots=myMentees.filter((_,j)=>j!==i).map(x=>x.id);
+      const opts=M
+        .filter(x=>x.role==='mentee'&&!takenByOtherSlots.includes(x.id))
+        .map(x=>{
+          const mentor=x.pair&&x.pair!==m.id?M.find(y=>y.id===x.pair):null;
+          const suffix=mentor?`（現由 ${xe(mentor.name)} 帶）`:'';
+          return `<option value="${x.id}"${curId===x.id?' selected':''}>${xe(x.name)}${suffix}</option>`;
+        }).join('');
+      rows.push(`<select onchange="setMentee('${m.id}',${i},this.value||null)" style="font-size:11px;padding:3px 5px">
+        <option value="">— 第 ${i+1} 位 —</option>${opts}
+      </select>`);
+    }
+    return `<div style="display:flex;flex-direction:column;gap:3px">${rows.join('')}</div>`;
+  }
+  if(m.role==='mentee'){
+    const mentor=m.pair?M.find(x=>x.id===m.pair):null;
+    if(mentor&&mentor.role==='mentor'){
+      return `<span style="font-size:12px;color:#1a3a6b">🎓 導師：<b>${xe(mentor.name)}</b></span>`;
+    }
+    return `<span style="font-size:11px;color:#999;font-style:italic">（尚未配對·由導師端選擇）</span>`;
+  }
+  return `<span style="color:#ccc;font-size:12px">—</span>`;
 }
 function addMember(){
   const name=document.getElementById('nm-name').value.trim();
@@ -874,6 +909,39 @@ function addMember(){
 function updM(id,f,v){
   const m=D.members.find(x=>x.id===id);if(!m)return;
   m[f]=v||null;save();if(['role','chain','pair'].includes(f))renderMembers();
+}
+// 導師端設定第 slotIdx 位導生（slotIdx: 0/1/2；newMenteeId: 導生 id 或 null 表示清空）
+function setMentee(mentorId,slotIdx,newMenteeId){
+  const mentor=D.members.find(x=>x.id===mentorId);
+  if(!mentor||mentor.role!=='mentor'){return;}
+  const myMentees=D.members.filter(x=>x.role==='mentee'&&x.pair===mentor.id);
+  const prevMentee=myMentees[slotIdx]||null;  // 此槽目前的導生（可能為 null）
+  // 清空槽
+  if(!newMenteeId){
+    if(prevMentee){prevMentee.pair=null;}
+    save();renderMembers();return;
+  }
+  const target=D.members.find(x=>x.id===newMenteeId);
+  if(!target||target.role!=='mentee'){alert('此成員不是導生');renderMembers();return;}
+  // 沒改變：同一位導生還在同一個槽
+  if(prevMentee&&prevMentee.id===target.id){return;}
+  // 防呆：同導師的其他槽已占走此導生（理論上下拉已過濾，保險起見）
+  if(myMentees.some((x,j)=>j!==slotIdx&&x.id===target.id)){
+    alert('此導生已在本導師的其他槽');renderMembers();return;
+  }
+  // 若目標導生原本被別的導師帶著，要確認
+  if(target.pair&&target.pair!==mentor.id){
+    const oldMentor=D.members.find(x=>x.id===target.pair);
+    const oldName=oldMentor?oldMentor.name:'（未知）';
+    if(!confirm(`「${target.name}」目前由「${oldName}」輔導，確定改由「${mentor.name}」輔導？`)){
+      renderMembers();return;
+    }
+  }
+  // 先把此槽原本的導生釋放（設 null）
+  if(prevMentee){prevMentee.pair=null;}
+  // 設定新的配對
+  target.pair=mentor.id;
+  save();renderMembers();
 }
 function renameM(id,inputEl){
   const m=D.members.find(x=>x.id===id);if(!m){return;}
@@ -937,6 +1005,19 @@ async function exportPDF(){
 
 // ── PERSISTENCE ──
 function save(){localStorage.setItem('bni_v5',JSON.stringify(D));}
+// 把舊資料導師端的 pair 欄位洗掉：關係全部轉到導生側；導師 pair 欄位一律 null
+function migrateMentorPair(){
+  if(!D||!Array.isArray(D.members))return;
+  D.members.forEach(mentor=>{
+    if(mentor.role==='mentor'&&mentor.pair){
+      const mentee=D.members.find(x=>x.id===mentor.pair);
+      if(mentee&&mentee.role==='mentee'&&!mentee.pair){
+        mentee.pair=mentor.id;
+      }
+      mentor.pair=null;
+    }
+  });
+}
 function load(){
   const raw=localStorage.getItem('bni_v5');
   if(raw){
@@ -954,6 +1035,7 @@ function load(){
       D.weekly.gps.forEach(p=>{if(!p.score)p.score=3;});
       // Migration: old chains may not have repId
       D.chains.forEach(c=>{if(!('repId' in c))c.repId=null;});
+      migrateMentorPair();
     }catch{D=seed();save();}
   }else{D=seed();save();}
 }
@@ -966,7 +1048,7 @@ function exportJSON(){
 function importJSON(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{D=JSON.parse(ev.target.result);save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
+  r.onload=ev=>{try{D=JSON.parse(ev.target.result);migrateMentorPair();save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
   r.readAsText(f);e.target.value='';
 }
 
@@ -1067,6 +1149,7 @@ async function cloudLoad(){
     const json=await res.json();
     if(!json.data) throw new Error('雲端資料為空');
     D=json.data;
+    migrateMentorPair();
     save(); // 同步到 localStorage
     renderChart();
     if(document.getElementById('tab-weekly').classList.contains('on')) renderWeekly();
@@ -1087,6 +1170,7 @@ async function cloudAutoLoad(){
     const json=await res.json();
     if(!json.data) return;
     D=json.data;
+    migrateMentorPair();
     save();
     renderChart();
     setCloudStatus('✅ 已同步雲端','ok');
