@@ -56,6 +56,23 @@ app.post('/api/data', async (req, res) => {
   }
 });
 
+// 小組名冊 proxy：轉打 System A（bni-kpi）的公開端點
+// 走伺服器端 fetch 是因為 bni-kpi 的 /api/groups 沒有 CORS 標頭，瀏覽器直接打會被擋
+const KPI_BASE = process.env.KPI_BASE || 'https://bni-kpi-production.up.railway.app';
+app.get('/api/groups', async (req, res) => {
+  try {
+    const r = await fetch(`${KPI_BASE}/api/groups`);
+    if (!r.ok) {
+      return res.status(r.status).json({ error: `分會系統回傳 ${r.status}` });
+    }
+    const json = await r.json();
+    res.json({ ok: true, groups: json });
+  } catch (err) {
+    console.error('GET /api/groups error:', err);
+    res.status(502).json({ error: '無法連上分會系統：' + err.message });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     ok: true,

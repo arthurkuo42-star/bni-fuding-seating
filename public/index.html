@@ -172,6 +172,7 @@ label.btn{cursor:pointer}
 <div id="tab-seating" class="panel on">
   <div class="toolbar">
     <button class="btn btn-gold"  onclick="autoGenerate()">⚡ 自動產生座位圖</button>
+    <button class="btn btn-slate" id="btn-closed" onclick="toggleClosedMode()">🔓 封閉組別入座：關</button>
     <button class="btn btn-green" onclick="exportPDF()">📄 匯出 PDF</button>
     <button class="btn btn-green" onclick="exportIMG()">🖼️ 匯出圖片</button>
     <button class="btn btn-cloud-save" onclick="cloudSave()">☁️ 存到雲端</button>
@@ -182,7 +183,7 @@ label.btn{cursor:pointer}
     <label  class="btn btn-slate">📂 本機還原<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>
     <button class="btn btn-blue" onclick="addSeatRow()" title="在座位表底部新增一排空白格">＋ 新增座位列</button>
   </div>
-  <div class="legend">
+  <div class="legend" id="legend-box">
     <div class="leg"><div class="leg-dot" style="background:#f9e04b"></div>來賓</div>
     <div class="leg"><div class="leg-dot" style="background:#4e87c8"></div>締結組</div>
     <div class="leg"><div class="leg-dot" style="background:#5fa83e"></div>導生</div>
@@ -258,12 +259,23 @@ label.btn{cursor:pointer}
     </div>
   </div>
   <div class="card">
+    <div class="card-head">🧩 小組（封閉會議入座用）</div>
+    <p style="font-size:13px;color:#666;margin-bottom:14px;line-height:1.6">「封閉組別入座」模式會依這裡的組別安排座位，同組坐同一張長桌。可從分會系統一鍵帶入，也可在下方成員列表手動調整個別成員的組別。</p>
+    <div class="frow">
+      <button class="btn btn-gold" onclick="importGroups()">📥 從分會系統匯入組別</button>
+      <input type="text" id="group-in" placeholder="手動新增組別，例如：第八組" style="width:180px" onkeydown="if(event.key==='Enter')addGroup()">
+      <button class="btn btn-blue" onclick="addGroup()">新增</button>
+    </div>
+    <div class="chain-tags" id="group-list"></div>
+    <div id="group-msg" style="font-size:12.5px;color:#666;margin-top:10px;line-height:1.7"></div>
+  </div>
+  <div class="card">
     <div class="card-head">👥 成員列表 <span id="mcnt" style="font-size:12px;font-weight:400;color:#888"></span></div>
     <div style="overflow-x:auto">
       <table class="mtbl">
         <thead><tr>
           <th style="width:100px">姓名</th><th style="width:110px">身分</th>
-          <th style="width:140px">產業服務鏈</th><th style="width:180px">導師配對（1–3 位導生）</th>
+          <th style="width:140px">產業服務鏈</th><th style="width:110px">小組</th><th style="width:180px">導師配對（1–3 位導生）</th>
           <th style="width:130px">幹部職位</th><th style="width:70px">操作</th>
         </tr></thead>
         <tbody id="mbody"></tbody>
@@ -321,8 +333,10 @@ const RLABEL={regular:'一般會員',binding:'締結組',mentor:'導師',mentee:
 const RCSS={regular:'rc-regular',binding:'rc-binding',mentor:'rc-mentor',mentee:'rc-mentee',reception:'rc-reception',chairman:'rc-front',computer:'rc-front',guest:'rc-guest',deputy:'rc-deputy',empty:'seat-e'};
 const RCOLOR={regular:'#f4f4f4',binding:'#4e87c8',mentor:'#e87ca0',mentee:'#5fa83e',reception:'#7b52ab',chairman:'#2E4899',computer:'#8B6914',guest:'#f9e04b',deputy:'#8B0000',empty:'#f9f9f9'};
 const SCORE_LABEL={1:'★ 1',2:'★★ 2',3:'★★★ 3（預設）',4:'★★★★ 4',5:'★★★★★ 5'};
+// 封閉組別入座用：每個小組一個底色（依組別順序循環取用）
+const GROUP_COLORS=['#4e87c8','#e0803c','#5fa83e','#a05fc0','#d94f70','#2fa8a0','#c9a227','#7a6ff0'];
 
-let D={members:[],chains:[],weekly:{chairman:'',comp1:'',comp2:'',gps:[],abs:[]},officerSlots:Array(6).fill(null),seating:null};
+let D={members:[],chains:[],groups:[],weekly:{chairman:'',comp1:'',comp2:'',gps:[],abs:[],closedMode:false},officerSlots:Array(6).fill(null),seating:null};
 
 function seed(){
   const M=[
@@ -436,9 +450,41 @@ function seed(){
   return{members:M,chains:[],weekly,officerSlots,seating};
 }
 
+// ── 封閉組別入座 開關 ──
+function isClosedMode(){return !!(D.weekly&&D.weekly.closedMode);}
+function toggleClosedMode(){
+  D.weekly.closedMode=!isClosedMode();
+  save();renderChart();
+  const on=isClosedMode();
+  alert(on
+    ?'🔒 已切換為「封閉組別入座」。\n\n・不排來賓與締結組配對、不排導師導生\n・同一小組坐同一張長桌\n・有接待組的小組優先排到後方\n・幹部第一排照舊\n\n請按「⚡ 自動產生座位圖」重新排位。'
+    :'🔓 已切回一般模式（含來賓、締結組、導師導生規則）。\n\n請按「⚡ 自動產生座位圖」重新排位。');
+}
+function renderClosedBtn(){
+  const b=document.getElementById('btn-closed');if(!b)return;
+  const on=isClosedMode();
+  b.textContent=(on?'🔒':'🔓')+' 封閉組別入座：'+(on?'開':'關');
+  b.className='btn '+(on?'btn-red':'btn-slate');
+}
+function renderLegend(){
+  const el=document.getElementById('legend-box');if(!el)return;
+  const leg=(color,label,border)=>`<div class="leg"><div class="leg-dot" style="background:${color}${border?';border-color:#ccc':''}"></div>${xe(label)}</div>`;
+  if(isClosedMode()){
+    const names=groupNames().filter(g=>(D.members||[]).some(m=>m.group===g));
+    let h=names.map(g=>leg(groupColor(g),g)).join('');
+    if((D.members||[]).some(m=>!m.group&&!['chairman','computer'].includes(m.role))) h+=leg('#dcdcdc','未分組');
+    h+=leg('#8B0000','代理人')+leg('#2E4899','幹部（第一排）');
+    el.innerHTML=h||leg('#dcdcdc','尚未設定小組');
+  }else{
+    el.innerHTML=leg('#f9e04b','來賓')+leg('#4e87c8','締結組')+leg('#5fa83e','導生')+leg('#e87ca0','導師')
+      +leg('#7b52ab','接待組')+leg('#f4f4f4','一般會員',true)+leg('#8B0000','代理人')+leg('#2E4899','幹部（第一排）');
+  }
+}
+
 // ── RENDER CHART ──
 function renderChart(){
   const{members:M,weekly:W,officerSlots:OS,seating:S}=D;
+  renderClosedBtn();renderLegend();
   const byId=id=>M.find(m=>m.id===id)||{name:'',role:''};
   const chair=byId(W.chairman),c1=byId(W.comp1),c2=byId(W.comp2);
 
@@ -524,8 +570,9 @@ function shuffle(arr){
   return arr;
 }
 
-// ── AUTO GENERATE ──
+// ── AUTO GENERATE（封閉模式走 generateClosed）──
 function autoGenerate(){
+  if(isClosedMode()) return generateClosed();
   const{members:M,weekly:W,chains,officerSlots:OS}=D;
   const byId=id=>M.find(m=>m.id===id);
   const COLS=6;
@@ -715,6 +762,92 @@ function autoGenerate(){
   D.seating=grid;save();renderChart();
 }
 
+// ── AUTO GENERATE：封閉會議 · 依小組入座 ──
+// 規則：無來賓 → 不排來賓/締結組配對、不排導師導生；
+//       同一小組坐同一張長桌（欄0-1 / 欄2-3 / 欄4-5 三個長桌區塊），由上往下連續佔位、組間不留空；
+//       有接待組成員的小組優先排到後方，接待組本人再排在該組的後段；
+//       幹部第一排與代理人末排維持原規則。
+function generateClosed(){
+  const{members:M,weekly:W,officerSlots:OS}=D;
+  const byId=id=>M.find(m=>m.id===id);
+  const COLS=6;
+  const BLOCKS=[[0,1],[2,3],[4,5]]; // 三張長桌，各兩欄
+  const E=()=>({n:'',r:'empty'});
+  const placed=new Set();
+  const mark=n=>{if(n)placed.add(n)};
+
+  // 固定席位不進格線
+  OS.forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+  [W.chairman,W.comp1,W.comp2].forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+  (W.abs||[]).forEach(id=>{const m=byId(id);if(m)mark(m.name);});
+
+  const skip=['chairman','computer'];
+  const pool=M.filter(m=>!skip.includes(m.role)&&!placed.has(m.name));
+  if(!pool.length){alert('沒有可排座的成員。');return;}
+
+  // 依小組分堆
+  const bucket={},nogroup=[];
+  pool.forEach(m=>{if(m.group){(bucket[m.group]=bucket[m.group]||[]).push(m);}else nogroup.push(m);});
+  if(!Object.keys(bucket).length){
+    alert('目前沒有任何成員設定小組。\n\n請先到「👥 成員管理」→「🧩 小組」按「📥 從分會系統匯入組別」，或手動指定組別。');
+    gotoTab('members');return;
+  }
+
+  // 組別順序：先照 groupNames() 的既有順序，其餘接在後面
+  const order=groupNames().filter(g=>bucket[g]);
+  Object.keys(bucket).forEach(g=>{if(!order.includes(g))order.push(g);});
+
+  const groups=order.map(name=>{
+    const mem=bucket[name];
+    // 組內：接待組排到該組後段
+    const members=[...mem.filter(m=>m.role!=='reception'),...mem.filter(m=>m.role==='reception')];
+    return{name,members,rc:mem.filter(m=>m.role==='reception').length};
+  });
+  // 接待組人數少的先坐（前方），多的後坐（後方）；同數者人多的先排以利三張桌平衡
+  groups.sort((a,b)=>a.rc-b.rc||b.members.length-a.members.length);
+  if(nogroup.length) groups.push({name:'未分組',members:nogroup,rc:0});
+
+  // 逐組填入最短的長桌區塊
+  const colCells=Array.from({length:COLS},()=>[]);
+  const blockH=[0,0,0];
+  for(const g of groups){
+    let bi=0;
+    for(let i=1;i<BLOCKS.length;i++) if(blockH[i]<blockH[bi]) bi=i;
+    const[ca,cb]=BLOCKS[bi];
+    const color=groupColor(g.name);
+    g.members.forEach((m,i)=>{
+      colCells[(i%2===0)?ca:cb].push({n:m.name,r:m.role,color});
+      mark(m.name);
+    });
+    // 該組佔的排數（人數奇數時最後一排右側留一格空位）
+    blockH[bi]+=Math.ceil(g.members.length/2);
+    while(colCells[ca].length<blockH[bi]) colCells[ca].push(E());
+    while(colCells[cb].length<blockH[bi]) colCells[cb].push(E());
+  }
+
+  // 轉成列
+  const rows=Math.max(...colCells.map(c=>c.length));
+  const grid=[];
+  for(let ri=0;ri<rows;ri++){
+    const row=Array(COLS).fill(null).map(E);
+    for(let ci=0;ci<COLS;ci++) if(ri<colCells[ci].length) row[ci]=colCells[ci][ri];
+    grid.push(row);
+  }
+  while(grid.length&&grid[grid.length-1].every(c=>!c||c.r==='empty')) grid.pop();
+
+  // 代理人固定末排
+  const absArr=W.abs||[];
+  if(absArr.length>0){
+    const dRow=Array(COLS).fill(null).map(E);
+    absArr.forEach((mid,i)=>{
+      if(i<COLS){const m=byId(mid);dRow[i]={n:(m?m.name:mid)+'(代)',r:'deputy'};}
+    });
+    grid.push(dRow);
+  }
+
+  D.seating=grid;save();renderChart();
+}
+
 
 // ── DRAG & DROP ──
 let _src=null,_dragged=false;
@@ -842,12 +975,15 @@ function saveOfficers(){
 // ── MEMBERS ──
 function renderMembers(){
   const{members:M,chains:C,officerSlots:OS}=D;
+  const G=groupNames();
   const co=C.map(c=>`<option value="${c.id}">${xe(c.name)}</option>`).join('');
   document.getElementById('nm-chain').innerHTML=`<option value="">— 無產業鏈 —</option>`+co;
   document.getElementById('mcnt').textContent=`（共 ${M.length} 人）`;
+  renderGroups();
   const tbody=document.getElementById('mbody');tbody.innerHTML='';
   M.forEach(m=>{
     const cSel=C.map(c=>`<option value="${c.id}"${m.chain===c.id?' selected':''}>${xe(c.name)}</option>`).join('');
+    const gSel=G.map(g=>`<option value="${xe(g)}"${m.group===g?' selected':''}>${xe(g)}</option>`).join('');
     const slotIdx=OS.indexOf(m.id);
     const slotLabel=slotIdx>=0?OFFICER_SLOTS[slotIdx].title:'—';
     const pairCellHtml=pairCell(m,M);
@@ -855,6 +991,7 @@ function renderMembers(){
     tr.innerHTML=`<td style="white-space:nowrap"><span class="rdot" style="background:${RCOLOR[m.role]||'#eee'}"></span><input type="text" value="${xe(m.name)}" data-orig="${xe(m.name)}" onchange="renameM('${m.id}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="border:1px solid transparent;background:transparent;font-weight:600;font-size:13px;padding:3px 6px;border-radius:4px;width:100px" onfocus="this.style.border='1px solid #2E4899';this.style.background='#fff'" onblur="this.style.border='1px solid transparent';this.style.background='transparent'" title="點選可修改姓名"></td>
       <td><select onchange="updM('${m.id}','role',this.value)">${Object.entries(RLABEL).filter(([k])=>!['guest','deputy','empty'].includes(k)).map(([k,v])=>`<option value="${k}"${m.role===k?' selected':''}>${v}</option>`).join('')}</select></td>
       <td><select onchange="updM('${m.id}','chain',this.value||null)"><option value="">— 無 —</option>${cSel}</select></td>
+      <td><select onchange="updM('${m.id}','group',this.value||null)"><option value="">— 無 —</option>${gSel}</select></td>
       <td>${pairCellHtml}</td>
       <td><span style="font-size:12px;color:${slotIdx>=0?'#1a3a6b':'#bbb'};font-weight:${slotIdx>=0?600:400}">${slotIdx>=0?'🎖️ '+slotLabel:'—'}</span></td>
       <td><button class="btn btn-red btn-sm" onclick="delM('${m.id}')">刪除</button></td>`;
@@ -987,6 +1124,87 @@ function delChain(id){
   save();renderChains();
 }
 
+// ── GROUPS（小組：封閉會議入座用）──
+// 組別清單 = D.groups（匯入或手動建立）∪ 成員身上實際出現過的組名
+function groupNames(){
+  const list=Array.isArray(D.groups)?[...D.groups]:[];
+  (D.members||[]).forEach(m=>{if(m.group&&!list.includes(m.group))list.push(m.group);});
+  return list;
+}
+function groupColor(name){
+  const idx=groupNames().indexOf(name);
+  if(name==='未分組'||idx<0) return '#dcdcdc';
+  return GROUP_COLORS[idx%GROUP_COLORS.length];
+}
+function renderGroups(){
+  const el=document.getElementById('group-list');if(!el)return;
+  el.innerHTML='';
+  const names=groupNames();
+  if(!names.length){
+    el.innerHTML='<span style="font-size:12.5px;color:#aaa;font-style:italic">尚未設定任何小組</span>';
+    return;
+  }
+  names.forEach(g=>{
+    const cnt=(D.members||[]).filter(m=>m.group===g).length;
+    const bg=groupColor(g);
+    const d=document.createElement('div');d.className='ctag';
+    d.style.background=bg;d.style.color=textColor(bg);d.style.borderColor=bg;
+    d.innerHTML=`${xe(g)}（${cnt}）<span class="x" onclick="delGroup('${xe(g)}')">×</span>`;
+    el.appendChild(d);
+  });
+}
+function addGroup(){
+  const n=document.getElementById('group-in').value.trim();if(!n)return;
+  if(!Array.isArray(D.groups))D.groups=[];
+  if(groupNames().includes(n)){alert('已有同名小組');return;}
+  D.groups.push(n);
+  document.getElementById('group-in').value='';
+  save();renderMembers();
+}
+function delGroup(name){
+  const cnt=(D.members||[]).filter(m=>m.group===name).length;
+  if(!confirm(`刪除「${name}」？${cnt>0?`該組 ${cnt} 位成員的組別會被清空。`:''}`))return;
+  D.groups=(D.groups||[]).filter(g=>g!==name);
+  D.members.forEach(m=>{if(m.group===name)m.group=null;});
+  save();renderMembers();
+}
+// 從 System A（bni-kpi）匯入小組名冊，用姓名比對
+async function importGroups(){
+  const msg=document.getElementById('group-msg');
+  if(msg)msg.innerHTML='<span style="color:#888">讀取分會系統中…</span>';
+  try{
+    const res=await fetch('/api/groups');
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json=await res.json();
+    const groups=json.groups||{};
+    const names=Object.keys(groups);
+    if(!names.length) throw new Error('分會系統沒有小組資料');
+
+    // 姓名 → 組名
+    const nameToGroup={};
+    names.forEach(g=>(groups[g]||[]).forEach(n=>{if(n)nameToGroup[String(n).trim()]=g;}));
+
+    let hit=0;const missed=[];
+    D.members.forEach(m=>{
+      if(['chairman','computer'].includes(m.role)&&!nameToGroup[m.name]) return; // 主席/電腦手不排座，無組別不算漏
+      const g=nameToGroup[(m.name||'').trim()];
+      if(g){m.group=g;hit++;}
+      else missed.push(m.name);
+    });
+    D.groups=names;
+    save();renderMembers();
+
+    const extra=Object.keys(nameToGroup).filter(n=>!D.members.some(m=>m.name===n));
+    let html=`✅ 已帶入 <b>${hit}</b> 位成員的組別（共 ${names.length} 組）。`;
+    if(missed.length) html+=`<br>⚠️ 座位系統有、名冊查無，請手動指定組別：<b>${missed.map(xe).join('、')}</b>`;
+    if(extra.length)  html+=`<br>ℹ️ 名冊有、座位系統沒有這幾位（可能是新成員未加入座位系統）：${extra.map(xe).join('、')}`;
+    if(msg)msg.innerHTML=html;
+  }catch(e){
+    if(msg)msg.innerHTML=`<span style="color:#c0392b">❌ 匯入失敗：${xe(e.message)}（分會系統可能暫時離線，可改用手動新增）</span>`;
+    console.error('importGroups error:',e);
+  }
+}
+
 // ── PDF ──
 async function exportPDF(){
   const el=document.getElementById('pa');
@@ -1005,6 +1223,14 @@ async function exportPDF(){
 
 // ── PERSISTENCE ──
 function save(){localStorage.setItem('bni_v5',JSON.stringify(D));}
+// 補齊新版欄位（舊資料沒有 groups / group / closedMode 時不會壞）
+function migrateGroups(){
+  if(!D||typeof D!=='object')return;
+  if(!Array.isArray(D.groups))D.groups=[];
+  if(!D.weekly||typeof D.weekly!=='object')D.weekly={chairman:'',comp1:'',comp2:'',gps:[],abs:[]};
+  if(typeof D.weekly.closedMode!=='boolean')D.weekly.closedMode=false;
+  (D.members||[]).forEach(m=>{if(!('group'in m))m.group=null;});
+}
 // 把舊資料導師端的 pair 欄位洗掉：關係全部轉到導生側；導師 pair 欄位一律 null
 function migrateMentorPair(){
   if(!D||!Array.isArray(D.members))return;
@@ -1035,9 +1261,10 @@ function load(){
       D.weekly.gps.forEach(p=>{if(!p.score)p.score=3;});
       // Migration: old chains may not have repId
       D.chains.forEach(c=>{if(!('repId' in c))c.repId=null;});
-      migrateMentorPair();
+      migrateMentorPair();migrateGroups();
     }catch{D=seed();save();}
   }else{D=seed();save();}
+  migrateGroups();
 }
 function exportJSON(){
   const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
@@ -1048,7 +1275,7 @@ function exportJSON(){
 function importJSON(e){
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=ev=>{try{D=JSON.parse(ev.target.result);migrateMentorPair();save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
+  r.onload=ev=>{try{D=JSON.parse(ev.target.result);migrateMentorPair();migrateGroups();save();renderChart();alert('✅ 資料還原成功！');}catch{alert('❌ 格式錯誤');}};
   r.readAsText(f);e.target.value='';
 }
 
@@ -1149,7 +1376,7 @@ async function cloudLoad(){
     const json=await res.json();
     if(!json.data) throw new Error('雲端資料為空');
     D=json.data;
-    migrateMentorPair();
+    migrateMentorPair();migrateGroups();
     save(); // 同步到 localStorage
     renderChart();
     if(document.getElementById('tab-weekly').classList.contains('on')) renderWeekly();
@@ -1170,7 +1397,7 @@ async function cloudAutoLoad(){
     const json=await res.json();
     if(!json.data) return;
     D=json.data;
-    migrateMentorPair();
+    migrateMentorPair();migrateGroups();
     save();
     renderChart();
     setCloudStatus('✅ 已同步雲端','ok');
